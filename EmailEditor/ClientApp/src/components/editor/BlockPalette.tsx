@@ -12,6 +12,8 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: string }[] = [
 interface Props {
   onAdd: (type: BlockType) => void;
   compact?: boolean;
+  mergeData?: string;
+  onMergeDataChange?: (value: string) => void;
 }
 
 export function BlockPalette({ onAdd, compact = false }: Props) {

@@ -107,6 +107,7 @@ const btnBase: React.CSSProperties = {
 
 export default function App() {
   const [blocks, setBlocks] = useState<EmailBlock[]>([]);
+  const [mergeData, setMergeData] = useState<string>('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -176,11 +177,16 @@ export default function App() {
     return { blocks };
   }
 
+  function parsedMergeData(): object | undefined {
+    if (!mergeData.trim()) return undefined;
+    try { return JSON.parse(mergeData); } catch { return undefined; }
+  }
+
   async function handlePreview() {
     setLoading(true);
     setError(null);
     try {
-      const html = await generateHtml(buildDocument());
+      const html = await generateHtml(buildDocument(), parsedMergeData());
       setPreviewHtml(html);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
@@ -249,7 +255,7 @@ export default function App() {
         onDragCancel={() => setActiveId(null)}
       >
         <div style={{ display: 'flex', gap: 16, padding: 16, maxWidth: 1200, margin: '0 auto' }}>
-          <BlockPalette onAdd={addBlock} />
+          <BlockPalette onAdd={addBlock} mergeData={mergeData} onMergeDataChange={setMergeData} />
           <div style={{ flex: 1 }}>
             <BlockCanvas blocks={blocks} onBlocksChange={setBlocks} containerId="root" />
             <PreviewPanel html={previewHtml} />
