@@ -14,6 +14,8 @@ import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import { BlockPalette } from './components/editor/BlockPalette';
 import { BlockCanvas } from './components/editor/BlockCanvas';
 import { PreviewPanel } from './components/preview/PreviewPanel';
+import { MergeFieldsContext } from './components/editor/MergeFieldChips';
+import { flattenKeys } from './components/editor/DataTab';
 import type { EmailBlock, BlockType, TwoColumnBlock } from './types/blocks';
 import { createBlock } from './types/blocks';
 import { generateHtml } from './api/generate';
@@ -247,6 +249,9 @@ export default function App() {
         </div>
       )}
 
+      <MergeFieldsContext.Provider value={(() => {
+        try { return mergeData.trim() ? flattenKeys(JSON.parse(mergeData)) : []; } catch { return []; }
+      })()}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -288,6 +293,7 @@ export default function App() {
           })() : null}
         </DragOverlay>
       </DndContext>
+      </MergeFieldsContext.Provider>
     </div>
   );
 }
