@@ -19,25 +19,15 @@ public class EmailDocumentTests
                 new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly()),
         };
 
-        var doc = new EmailDocument(
-            Subject: "Test Subject",
-            PreviewText: "Preview snippet",
-            FromName: "Sender Name",
-            FromAddress: "sender@example.com",
-            Blocks: blocks.AsReadOnly()
-        );
+        var doc = new EmailDocument(Blocks: blocks.AsReadOnly());
 
-        Assert.Equal("Test Subject", doc.Subject);
-        Assert.Equal("Preview snippet", doc.PreviewText);
-        Assert.Equal("Sender Name", doc.FromName);
-        Assert.Equal("sender@example.com", doc.FromAddress);
         Assert.Equal(6, doc.Blocks.Count);
     }
 
     [Fact]
     public void EmailDocument_Blocks_IsIReadOnlyList()
     {
-        var doc = new EmailDocument("S", "P", "F", "f@f.com", new List<IEmailBlock>().AsReadOnly());
+        var doc = new EmailDocument(new List<IEmailBlock>().AsReadOnly());
         Assert.IsAssignableFrom<IReadOnlyList<IEmailBlock>>(doc.Blocks);
     }
 

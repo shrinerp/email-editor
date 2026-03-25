@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import { BlockPalette } from './components/editor/BlockPalette';
 import { BlockCanvas } from './components/editor/BlockCanvas';
-import { MetadataForm } from './components/editor/MetadataForm';
 import { PreviewPanel } from './components/preview/PreviewPanel';
 import type { EmailBlock, BlockType, TwoColumnBlock } from './types/blocks';
 import { createBlock } from './types/blocks';
@@ -70,14 +71,29 @@ function setContainerBlocks(
   });
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
+// ── Drag overlay helpers ──────────────────────────────────────────────────────
 
-interface Metadata {
-  subject: string;
-  previewText: string;
-  fromName: string;
-  fromAddress: string;
+function findBlock(blocks: EmailBlock[], id: string): EmailBlock | null {
+  for (const b of blocks) {
+    if (b.id === id) return b;
+    if (b.type === 'twoColumn') {
+      const found = findBlock(b.leftBlocks, id) ?? findBlock(b.rightBlocks, id);
+      if (found) return found;
+    }
+  }
+  return null;
 }
+
+const blockTypeLabel: Record<string, string> = {
+  hero: 'Hero',
+  text: 'Text',
+  button: 'Button',
+  image: 'Image',
+  divider: 'Divider',
+  twoColumn: 'Two Columns',
+};
+
+// ── App ───────────────────────────────────────────────────────────────────────
 
 const btnBase: React.CSSProperties = {
   padding: '8px 20px',
@@ -90,13 +106,8 @@ const btnBase: React.CSSProperties = {
 };
 
 export default function App() {
-  const [metadata, setMetadata] = useState<Metadata>({
-    subject: '',
-    previewText: '',
-    fromName: '',
-    fromAddress: '',
-  });
   const [blocks, setBlocks] = useState<EmailBlock[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +117,12 @@ export default function App() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  function handleDragStart({ active }: DragStartEvent) {
+    setActiveId(String(active.id));
+  }
+
   function handleDragEnd({ active, over }: DragEndEvent) {
+    setActiveId(null);
     if (!over) return;
     const activeId = String(active.id);
     const overId = String(over.id);
@@ -157,7 +173,7 @@ export default function App() {
   }
 
   function buildDocument() {
-    return { ...metadata, blocks };
+    return { blocks };
   }
 
   async function handlePreview() {
@@ -182,7 +198,7 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${metadata.subject || 'email'}.html`;
+      a.download = 'email.html';
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -225,15 +241,46 @@ export default function App() {
         </div>
       )}
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveId(null)}
+      >
         <div style={{ display: 'flex', gap: 16, padding: 16, maxWidth: 1200, margin: '0 auto' }}>
           <BlockPalette onAdd={addBlock} />
           <div style={{ flex: 1 }}>
-            <MetadataForm metadata={metadata} onChange={setMetadata} />
             <BlockCanvas blocks={blocks} onBlocksChange={setBlocks} containerId="root" />
             <PreviewPanel html={previewHtml} />
           </div>
         </div>
+        <DragOverlay>
+          {activeId ? (() => {
+            const block = findBlock(blocks, activeId);
+            return (
+              <div style={{
+                background: '#fff',
+                border: '2px solid #3b82f6',
+                borderRadius: 8,
+                padding: '10px 16px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                cursor: 'grabbing',
+                fontWeight: 600,
+                fontSize: 14,
+                color: '#1e40af',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                whiteSpace: 'nowrap',
+                userSelect: 'none',
+              }}>
+                <span style={{ fontSize: 18, color: '#93c5fd' }}>⠿</span>
+                {blockTypeLabel[block?.type ?? ''] ?? 'Block'}
+              </div>
+            );
+          })() : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

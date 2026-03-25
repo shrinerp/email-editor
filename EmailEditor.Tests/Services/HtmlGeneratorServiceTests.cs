@@ -8,7 +8,7 @@ public class HtmlGeneratorServiceTests
     private readonly HtmlGeneratorService _sut = new();
 
     private static EmailDocument DocWith(params IEmailBlock[] blocks) =>
-        new("Subject", "Preview text", "Sender", "sender@example.com", blocks.ToList().AsReadOnly());
+        new(blocks.ToList().AsReadOnly());
 
     // ── Document structure ────────────────────────────────────────────────
 
@@ -26,16 +26,6 @@ public class HtmlGeneratorServiceTests
         Assert.Contains("<html", html);
         Assert.Contains("<head>", html);
         Assert.Contains("<body", html);
-    }
-
-    [Fact]
-    public void Generate_InlinesPreviewText()
-    {
-        var html = _sut.Generate(DocWith());
-        Assert.Contains("Preview text", html);
-        // Preview text trick: wrapped in a hidden div
-        Assert.Contains("display:none", html);
-        Assert.Contains("max-height:0", html);
     }
 
     [Fact]

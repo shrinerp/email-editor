@@ -1,5 +1,6 @@
 import {
   useDroppable,
+  useDndContext,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -84,23 +85,28 @@ interface Props {
 
 export function BlockCanvas({ blocks, onBlocksChange, containerId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: containerId });
+  const { active } = useDndContext();
+  const isDraggingAny = active !== null;
 
   if (blocks.length === 0) {
+    const bg = isOver ? '#eff6ff' : isDraggingAny ? '#f8faff' : 'transparent';
+    const borderColor = isOver ? '#93c5fd' : isDraggingAny ? '#bfdbfe' : '#e0e0e0';
+    const color = isOver ? '#3b82f6' : isDraggingAny ? '#60a5fa' : '#aaa';
     return (
       <div ref={setNodeRef} style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: isOver ? '#3b82f6' : '#aaa',
-        border: `2px dashed ${isOver ? '#93c5fd' : '#e0e0e0'}`,
-        background: isOver ? '#eff6ff' : 'transparent',
+        color,
+        border: `2px dashed ${borderColor}`,
+        background: bg,
         borderRadius: 8,
         minHeight: 200,
         fontSize: 14,
-        transition: 'background 0.15s, border-color 0.15s',
+        transition: 'background 0.15s, border-color 0.15s, color 0.15s',
       }}>
-        {isOver ? 'Drop here' : 'Add a block from the palette to get started'}
+        {isDraggingAny ? 'Drop here' : 'Add a block from the palette to get started'}
       </div>
     );
   }

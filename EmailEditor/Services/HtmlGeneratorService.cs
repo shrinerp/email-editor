@@ -18,12 +18,6 @@ public class HtmlGeneratorService
         sb.AppendLine("</head>");
         sb.AppendLine("<body style=\"margin:0;padding:0;background-color:#f4f4f4;\">");
 
-        // Preview text trick — invisible text shown in inbox snippet
-        if (!string.IsNullOrEmpty(doc.PreviewText))
-        {
-            sb.AppendLine($"<div style=\"display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;\">{HtmlEncode(doc.PreviewText)}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>");
-        }
-
         // Outer centering table
         sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background-color:#f4f4f4;\">");
         sb.AppendLine("<tr>");

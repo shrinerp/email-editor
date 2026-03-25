@@ -49,10 +49,6 @@ export type EmailBlock =
   | TwoColumnBlock;
 
 export interface EmailDocument {
-  subject: string;
-  previewText: string;
-  fromName: string;
-  fromAddress: string;
   blocks: EmailBlock[];
 }
 

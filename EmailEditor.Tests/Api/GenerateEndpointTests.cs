@@ -16,10 +16,6 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
 
     private static object FullDocument() => new
     {
-        subject = "Test Subject",
-        previewText = "Preview snippet",
-        fromName = "Sender",
-        fromAddress = "sender@example.com",
         blocks = new object[]
         {
             new { type = "hero", imageUrl = "https://img.url/banner.jpg", headline = "Hello" },
@@ -90,7 +86,6 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     {
         var doc = new
         {
-            subject = "S", previewText = "P", fromName = "F", fromAddress = "f@f.com",
             blocks = new object[]
             {
                 new
@@ -125,10 +120,6 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     {
         var doc = new
         {
-            subject = "S",
-            previewText = "P",
-            fromName = "F",
-            fromAddress = "f@f.com",
             blocks = new object[]
             {
                 new { type = "text", htmlContent = "<script>alert('xss')</script><p>Safe</p>" }

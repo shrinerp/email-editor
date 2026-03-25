@@ -7,10 +7,6 @@ namespace EmailEditor.Api;
 // DTOs for JSON deserialization with polymorphic block types
 
 public record EmailDocumentDto(
-    string Subject,
-    string PreviewText,
-    string FromName,
-    string FromAddress,
     List<JsonElement> Blocks
 );
 
@@ -25,13 +21,7 @@ public static class EmailDocumentDtoExtensions
             .ToList()
             .AsReadOnly();
 
-        return new EmailDocument(
-            dto.Subject ?? "",
-            dto.PreviewText ?? "",
-            dto.FromName ?? "",
-            dto.FromAddress ?? "",
-            blocks
-        );
+        return new EmailDocument(blocks);
     }
 
     private static IEmailBlock? DeserializeBlock(JsonElement el, Func<string, string> sanitize)
