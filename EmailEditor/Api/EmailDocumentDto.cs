@@ -60,12 +60,26 @@ public static class EmailDocumentDtoExtensions
             "divider" => new DividerBlock(),
 
             "twoColumn" => new TwoColumnBlock(
-                sanitize(GetString(el, "leftHtmlContent")),
-                sanitize(GetString(el, "rightHtmlContent"))),
+                DeserializeBlockList(GetArray(el, "leftBlocks"), sanitize),
+                DeserializeBlockList(GetArray(el, "rightBlocks"), sanitize)),
 
             _ => null
         };
     }
+
+    private static IReadOnlyList<IEmailBlock> DeserializeBlockList(
+        IEnumerable<JsonElement> elements, Func<string, string> sanitize) =>
+        elements
+            .Select(e => DeserializeBlock(e, sanitize))
+            .Where(b => b is not null)
+            .Cast<IEmailBlock>()
+            .ToList()
+            .AsReadOnly();
+
+    private static IEnumerable<JsonElement> GetArray(JsonElement el, string prop) =>
+        el.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.Array
+            ? v.EnumerateArray()
+            : Enumerable.Empty<JsonElement>();
 
     private static string GetString(JsonElement el, string prop) =>
         el.TryGetProperty(prop, out var v) ? v.GetString() ?? "" : "";

@@ -11,9 +11,40 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: string }[] = [
 
 interface Props {
   onAdd: (type: BlockType) => void;
+  compact?: boolean;
 }
 
-export function BlockPalette({ onAdd }: Props) {
+export function BlockPalette({ onAdd, compact = false }: Props) {
+  if (compact) {
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 4 }}>
+        {BLOCK_TYPES.map(({ type, label, icon }) => (
+          <button
+            key={type}
+            onClick={() => onAdd(type)}
+            title={label}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 8px',
+              background: '#fff',
+              border: '1px solid #ddd',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontSize: 11,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#f0f0f0')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+          >
+            <span>{icon}</span>
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <aside style={{
       width: 160,

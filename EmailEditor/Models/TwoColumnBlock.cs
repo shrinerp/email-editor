@@ -1,3 +1,6 @@
 namespace EmailEditor.Models;
 
-public record TwoColumnBlock(string LeftHtmlContent, string RightHtmlContent) : IEmailBlock;
+public record TwoColumnBlock(
+    IReadOnlyList<IEmailBlock> LeftBlocks,
+    IReadOnlyList<IEmailBlock> RightBlocks
+) : IEmailBlock;

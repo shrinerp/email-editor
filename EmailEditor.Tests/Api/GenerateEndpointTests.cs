@@ -27,7 +27,9 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             new { type = "button", label = "Click", url = "https://example.com", backgroundColor = "#000000", textColor = "#ffffff" },
             new { type = "image", imageUrl = "https://img.url/photo.jpg", altText = "Photo" },
             new { type = "divider" },
-            new { type = "twoColumn", leftHtmlContent = "<p>Left</p>", rightHtmlContent = "<p>Right</p>" },
+            new { type = "twoColumn",
+                leftBlocks = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
+                rightBlocks = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
         }
     };
 

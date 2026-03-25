@@ -1,30 +1,52 @@
-import { useEffect, useRef } from 'react';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
-import type { TwoColumnBlock } from '../../types/blocks';
+import type { TwoColumnBlock, EmailBlock, BlockType } from '../../types/blocks';
+import { createBlock } from '../../types/blocks';
+import { BlockCanvas } from '../editor/BlockCanvas';
+import { BlockPalette } from '../editor/BlockPalette';
 
 interface Props {
   block: TwoColumnBlock;
   onChange: (updated: TwoColumnBlock) => void;
 }
 
-function QuillEditor({ value, onChangeHtml }: { value: string; onChangeHtml: (html: string) => void }) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const quillRef = useRef<Quill | null>(null);
+function ColumnContainer({
+  label,
+  blocks,
+  onBlocksChange,
+}: {
+  label: string;
+  blocks: EmailBlock[];
+  onBlocksChange: (blocks: EmailBlock[]) => void;
+}) {
+  function handleAdd(type: BlockType) {
+    onBlocksChange([...blocks, createBlock(type)]);
+  }
 
-  useEffect(() => {
-    if (!editorRef.current || quillRef.current) return;
-    quillRef.current = new Quill(editorRef.current, {
-      theme: 'snow',
-      modules: { toolbar: [['bold', 'italic'], ['link']] },
-    });
-    if (value) quillRef.current.clipboard.dangerouslyPasteHTML(value);
-    quillRef.current.on('text-change', () => {
-      onChangeHtml(quillRef.current!.root.innerHTML);
-    });
-  }, []);
-
-  return <div ref={editorRef} style={{ minHeight: 80 }} />;
+  return (
+    <div style={{
+      border: '1px solid #e0e0e0',
+      borderRadius: 6,
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        padding: '6px 10px',
+        background: '#f8f8f8',
+        borderBottom: '1px solid #e0e0e0',
+        fontSize: 11,
+        fontWeight: 600,
+        color: '#666',
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.05em',
+      }}>
+        {label}
+      </div>
+      <div style={{ padding: 8 }}>
+        <BlockPalette onAdd={handleAdd} compact />
+        <div style={{ marginTop: 8 }}>
+          <BlockCanvas blocks={blocks} onBlocksChange={onBlocksChange} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function TwoColumnBlockEditor({ block, onChange }: Props) {
@@ -32,20 +54,16 @@ export function TwoColumnBlockEditor({ block, onChange }: Props) {
     <div>
       <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>Two Columns</label>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div>
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Left</div>
-          <QuillEditor
-            value={block.leftHtmlContent}
-            onChangeHtml={html => onChange({ ...block, leftHtmlContent: html })}
-          />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Right</div>
-          <QuillEditor
-            value={block.rightHtmlContent}
-            onChangeHtml={html => onChange({ ...block, rightHtmlContent: html })}
-          />
-        </div>
+        <ColumnContainer
+          label="Left"
+          blocks={block.leftBlocks}
+          onBlocksChange={leftBlocks => onChange({ ...block, leftBlocks })}
+        />
+        <ColumnContainer
+          label="Right"
+          blocks={block.rightBlocks}
+          onBlocksChange={rightBlocks => onChange({ ...block, rightBlocks })}
+        />
       </div>
     </div>
   );

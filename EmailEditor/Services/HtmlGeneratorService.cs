@@ -141,12 +141,23 @@ public class HtmlGeneratorService
         sb.AppendLine("<td style=\"padding:16px 32px;\">");
         sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
         sb.AppendLine("<tr>");
-        sb.AppendLine($"<td width=\"50%\" valign=\"top\" style=\"padding-right:8px;font-family:Arial,sans-serif;font-size:16px;color:#333333;line-height:1.6;\">");
-        sb.AppendLine(block.LeftHtmlContent);
+
+        // Left column
+        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-right:8px;\">");
+        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
+        foreach (var child in block.LeftBlocks)
+            sb.AppendLine(RenderBlock(child));
+        sb.AppendLine("</table>");
         sb.AppendLine("</td>");
-        sb.AppendLine($"<td width=\"50%\" valign=\"top\" style=\"padding-left:8px;font-family:Arial,sans-serif;font-size:16px;color:#333333;line-height:1.6;\">");
-        sb.AppendLine(block.RightHtmlContent);
+
+        // Right column
+        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-left:8px;\">");
+        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
+        foreach (var child in block.RightBlocks)
+            sb.AppendLine(RenderBlock(child));
+        sb.AppendLine("</table>");
         sb.AppendLine("</td>");
+
         sb.AppendLine("</tr>");
         sb.AppendLine("</table>");
         sb.AppendLine("</td>");

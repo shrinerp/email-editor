@@ -14,7 +14,9 @@ public class EmailDocumentTests
             new ButtonBlock("Click Me", "https://example.com"),
             new ImageBlock("https://example.com/img.jpg", "Alt text"),
             new DividerBlock(),
-            new TwoColumnBlock("<p>Left</p>", "<p>Right</p>"),
+            new TwoColumnBlock(
+                new List<IEmailBlock> { new TextBlock("<p>Left</p>") }.AsReadOnly(),
+                new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly()),
         };
 
         var doc = new EmailDocument(
@@ -90,19 +92,32 @@ public class EmailDocumentTests
     [Fact]
     public void TwoColumnBlock_HasCorrectProperties()
     {
-        var block = new TwoColumnBlock("<p>Left</p>", "<p>Right</p>");
-        Assert.Equal("<p>Left</p>", block.LeftHtmlContent);
-        Assert.Equal("<p>Right</p>", block.RightHtmlContent);
+        var left = new List<IEmailBlock> { new TextBlock("<p>Left</p>") }.AsReadOnly();
+        var right = new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly();
+        var block = new TwoColumnBlock(left, right);
+        Assert.Same(left, block.LeftBlocks);
+        Assert.Same(right, block.RightBlocks);
+    }
+
+    [Fact]
+    public void TwoColumnBlock_SupportsEmptyColumns()
+    {
+        var block = new TwoColumnBlock(
+            new List<IEmailBlock>().AsReadOnly(),
+            new List<IEmailBlock>().AsReadOnly());
+        Assert.Empty(block.LeftBlocks);
+        Assert.Empty(block.RightBlocks);
     }
 
     [Fact]
     public void AllBlockTypes_ImplementIEmailBlock()
     {
+        var emptyList = new List<IEmailBlock>().AsReadOnly();
         Assert.IsAssignableFrom<IEmailBlock>(new HeroBlock("u", "h"));
         Assert.IsAssignableFrom<IEmailBlock>(new TextBlock("t"));
         Assert.IsAssignableFrom<IEmailBlock>(new ButtonBlock("l", "u"));
         Assert.IsAssignableFrom<IEmailBlock>(new ImageBlock("u", "a"));
         Assert.IsAssignableFrom<IEmailBlock>(new DividerBlock());
-        Assert.IsAssignableFrom<IEmailBlock>(new TwoColumnBlock("l", "r"));
+        Assert.IsAssignableFrom<IEmailBlock>(new TwoColumnBlock(emptyList, emptyList));
     }
 }
