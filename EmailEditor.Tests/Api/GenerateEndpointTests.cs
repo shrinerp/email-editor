@@ -86,6 +86,41 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
+    public async Task PostGenerate_TwoColumnWithNestedBlocksInBothColumns_RendersAllContent()
+    {
+        var doc = new
+        {
+            subject = "S", previewText = "P", fromName = "F", fromAddress = "f@f.com",
+            blocks = new object[]
+            {
+                new
+                {
+                    type = "twoColumn",
+                    leftBlocks = new object[]
+                    {
+                        new { type = "text", htmlContent = "<p>LeftText</p>" },
+                        new { type = "image", imageUrl = "https://img.url/left.jpg", altText = "left photo" }
+                    },
+                    rightBlocks = new object[]
+                    {
+                        new { type = "button", label = "RightBtn", url = "https://right.com",
+                              backgroundColor = "#000000", textColor = "#ffffff" }
+                    }
+                }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("LeftText", html);
+        Assert.Contains("https://img.url/left.jpg", html);
+        Assert.Contains("left photo", html);
+        Assert.Contains("RightBtn", html);
+        Assert.Contains("https://right.com", html);
+        Assert.Contains("50%", html);   // two-column structure present
+    }
+
+    [Fact]
     public async Task PostGenerate_ScriptInTextBlock_IsSanitized()
     {
         var doc = new

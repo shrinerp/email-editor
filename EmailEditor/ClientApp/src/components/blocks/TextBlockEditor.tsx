@@ -12,6 +12,10 @@ export function TextBlockEditor({ block, onChange }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
   const blockIdRef = useRef(block.id);
+  const onChangeRef = useRef(onChange);
+
+  // Keep onChangeRef current so the Quill handler always calls the latest onChange
+  useEffect(() => { onChangeRef.current = onChange; });
 
   useEffect(() => {
     if (!editorRef.current || quillRef.current) return;
@@ -23,7 +27,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
       quillRef.current.clipboard.dangerouslyPasteHTML(block.htmlContent);
     }
     quillRef.current.on('text-change', () => {
-      onChange({ ...block, id: blockIdRef.current, htmlContent: quillRef.current!.root.innerHTML });
+      onChangeRef.current({ ...block, id: blockIdRef.current, htmlContent: quillRef.current!.root.innerHTML });
     });
   }, []);
 
