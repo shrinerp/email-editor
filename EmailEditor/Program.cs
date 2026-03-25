@@ -28,6 +28,10 @@ app.MapPost("/api/generate", (HttpContext ctx, HtmlGeneratorService generator, H
         return Results.BadRequest("Request body is required");
 
     var doc = dto.ToEmailDocument(html => sanitizer.Sanitize(html));
+
+    if (dto.MergeData is { } mergeData && mergeData.ValueKind != System.Text.Json.JsonValueKind.Undefined)
+        doc = EmailDocumentDtoExtensions.ApplyMerge(doc, mergeData);
+
     var html = generator.Generate(doc);
 
     return Results.Content(html, "text/html");

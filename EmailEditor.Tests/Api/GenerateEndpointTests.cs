@@ -116,6 +116,69 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
+    public async Task PostGenerate_WithMergeData_ResolvesTokensInOutput()
+    {
+        var doc = new
+        {
+            mergeData = new { person = new { name = "Alice" }, company = "Acme" },
+            blocks = new object[]
+            {
+                new { type = "hero", imageUrl = "https://img.url/x.jpg", headline = "Hello {{person.name}}" },
+                new { type = "text", htmlContent = "<p>Welcome to {{company}}</p>" },
+                new { type = "button", label = "Hi {{person.name}}", url = "https://x.com" },
+                new { type = "image", imageUrl = "https://img.url/x.jpg", altText = "{{person.name}} photo" },
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("Hello Alice", html);
+        Assert.Contains("Welcome to Acme", html);
+        Assert.Contains("Hi Alice", html);
+        Assert.Contains("Alice photo", html);
+        Assert.DoesNotContain("{{person.name}}", html);
+        Assert.DoesNotContain("{{company}}", html);
+    }
+
+    [Fact]
+    public async Task PostGenerate_WithoutMergeData_RawTokensPassThrough()
+    {
+        var doc = new
+        {
+            blocks = new object[]
+            {
+                new { type = "text", htmlContent = "<p>Hello {{person.name}}</p>" }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("{{person.name}}", html);
+    }
+
+    [Fact]
+    public async Task PostGenerate_WithMergeData_TwoColumnNestedBlocksResolved()
+    {
+        var doc = new
+        {
+            mergeData = new { col = new { left = "LeftVal", right = "RightVal" } },
+            blocks = new object[]
+            {
+                new
+                {
+                    type = "twoColumn",
+                    leftBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.left}}</p>" } },
+                    rightBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.right}}</p>" } }
+                }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("LeftVal", html);
+        Assert.Contains("RightVal", html);
+    }
+
+    [Fact]
     public async Task PostGenerate_ScriptInTextBlock_IsSanitized()
     {
         var doc = new
