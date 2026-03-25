@@ -13,7 +13,7 @@ import {
 import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import { BlockPalette } from './components/editor/BlockPalette';
 import { BlockCanvas } from './components/editor/BlockCanvas';
-import { PreviewPanel } from './components/preview/PreviewPanel';
+import { PreviewModal } from './components/preview/PreviewModal';
 import { MergeFieldsContext } from './components/editor/MergeFieldChips';
 import { flattenKeys } from './components/editor/DataTab';
 import type { EmailBlock, BlockType, TwoColumnBlock } from './types/blocks';
@@ -112,6 +112,7 @@ export default function App() {
   const [mergeData, setMergeData] = useState<string>('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -190,6 +191,7 @@ export default function App() {
     try {
       const html = await generateHtml(buildDocument(), parsedMergeData());
       setPreviewHtml(html);
+      setShowPreview(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
@@ -263,7 +265,6 @@ export default function App() {
           <BlockPalette onAdd={addBlock} mergeData={mergeData} onMergeDataChange={setMergeData} />
           <div style={{ flex: 1 }}>
             <BlockCanvas blocks={blocks} onBlocksChange={setBlocks} containerId="root" />
-            <PreviewPanel html={previewHtml} />
           </div>
         </div>
         <DragOverlay>
@@ -294,6 +295,7 @@ export default function App() {
         </DragOverlay>
       </DndContext>
       </MergeFieldsContext.Provider>
+      <PreviewModal html={showPreview ? previewHtml : null} onClose={() => setShowPreview(false)} />
     </div>
   );
 }
