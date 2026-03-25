@@ -5,8 +5,8 @@ tags: [backend, generator, email, csharp]
 
 # HTML Generator
 
-> [!note] Not Yet Implemented
-> Tracked in [[https://github.com/shrinerp/email-editor/issues/3|#3]]. This document describes the intended design.
+> [!success] Implemented
+> `EmailEditor/Services/HtmlGeneratorService.cs` — 26 xUnit tests covering all block types and edge cases.
 
 ## Overview
 
@@ -120,7 +120,7 @@ Every block type is tested with xUnit. Tests assert:
 - Inline styles present
 - Edge cases: empty content, special characters, missing optional fields
 
-See `EmailEditor.Tests/Services/HtmlGeneratorTests.cs` (created in #3).
+See `EmailEditor.Tests/Services/HtmlGeneratorServiceTests.cs` — 26 tests covering all block types, inline styles, no-`<style>`-tag assertion, and edge cases (empty content, special characters).
 
 ## Related
 

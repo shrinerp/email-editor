@@ -18,18 +18,17 @@ A locally-hosted email editor that generates cross-email-client compatible HTML.
 
 ## Project Status
 
-> [!note] In Progress
-> This project is actively being built. See the [issue tracker](https://github.com/shrinerp/email-editor/issues) for current status.
+> [!success] Complete
+> All 6 implementation issues closed and merged to `main`.
 
 | Issue | Title | Status |
 |-------|-------|--------|
-| #1 | tracking: Local Email HTML Editor | 🔵 Open |
 | #2 | feat(models): define email block domain model | ✅ Merged |
-| #3 | feat(generator): implement server-side HTML generator | ⚪ Pending |
-| #4 | feat(api): create POST /api/generate endpoint | ⚪ Pending |
-| #5 | infra(spa): scaffold React + Vite SPA | 🟡 PR Open |
-| #6 | feat(ui): build block builder UI with drag-drop canvas | ⚪ Pending |
-| #7 | feat(ui): implement preview and HTML download | ⚪ Pending |
+| #3 | feat(generator): implement server-side HTML generator | ✅ Merged |
+| #4 | feat(api): create POST /api/generate endpoint | ✅ Merged |
+| #5 | infra(spa): scaffold React + Vite SPA | ✅ Merged |
+| #6 | feat(ui): build block builder UI with drag-drop canvas | ✅ Merged |
+| #7 | feat(ui): implement preview and HTML download | ✅ Merged |
 
 ## Tech Stack
 
@@ -38,5 +37,6 @@ A locally-hosted email editor that generates cross-email-client compatible HTML.
 | Backend | C# / ASP.NET Core (.NET 10) |
 | Frontend | React 19 + Vite (TypeScript) |
 | Drag-drop | dnd-kit |
-| Rich text | Quill (vanilla) |
-| Testing | xUnit |
+| Rich text | Quill (vanilla JS) |
+| HTML sanitization | HtmlSanitizer (Ganss.Xss) |
+| Testing | xUnit (44 tests) |
