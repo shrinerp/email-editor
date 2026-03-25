@@ -12,10 +12,12 @@ function ColumnContainer({
   label,
   blocks,
   onBlocksChange,
+  containerId,
 }: {
   label: string;
   blocks: EmailBlock[];
   onBlocksChange: (blocks: EmailBlock[]) => void;
+  containerId: string;
 }) {
   function handleAdd(type: BlockType) {
     onBlocksChange([...blocks, createBlock(type)]);
@@ -42,7 +44,7 @@ function ColumnContainer({
       <div style={{ padding: 8 }}>
         <BlockPalette onAdd={handleAdd} compact />
         <div style={{ marginTop: 8 }}>
-          <BlockCanvas blocks={blocks} onBlocksChange={onBlocksChange} />
+          <BlockCanvas blocks={blocks} onBlocksChange={onBlocksChange} containerId={containerId} />
         </div>
       </div>
     </div>
@@ -58,11 +60,13 @@ export function TwoColumnBlockEditor({ block, onChange }: Props) {
           label="Left"
           blocks={block.leftBlocks}
           onBlocksChange={leftBlocks => onChange({ ...block, leftBlocks })}
+          containerId={`${block.id}:left`}
         />
         <ColumnContainer
           label="Right"
           blocks={block.rightBlocks}
           onBlocksChange={rightBlocks => onChange({ ...block, rightBlocks })}
+          containerId={`${block.id}:right`}
         />
       </div>
     </div>
