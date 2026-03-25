@@ -1,18 +1,11 @@
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
+  useDroppable,
+  useDndContext,
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { EmailBlock } from '../../types/blocks';
@@ -87,55 +80,49 @@ function SortableBlock({
 interface Props {
   blocks: EmailBlock[];
   onBlocksChange: (blocks: EmailBlock[]) => void;
+  containerId: string;
 }
 
-export function BlockCanvas({ blocks, onBlocksChange }: Props) {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = blocks.findIndex(b => b.id === active.id);
-      const newIndex = blocks.findIndex(b => b.id === over.id);
-      onBlocksChange(arrayMove(blocks, oldIndex, newIndex));
-    }
-  }
+export function BlockCanvas({ blocks, onBlocksChange, containerId }: Props) {
+  const { setNodeRef, isOver } = useDroppable({ id: containerId });
+  const { active } = useDndContext();
+  const isDraggingAny = active !== null;
 
   if (blocks.length === 0) {
+    const bg = isOver ? '#eff6ff' : isDraggingAny ? '#f8faff' : 'transparent';
+    const borderColor = isOver ? '#93c5fd' : isDraggingAny ? '#bfdbfe' : '#e0e0e0';
+    const color = isOver ? '#3b82f6' : isDraggingAny ? '#60a5fa' : '#aaa';
     return (
-      <div style={{
+      <div ref={setNodeRef} style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#aaa',
-        border: '2px dashed #e0e0e0',
+        color,
+        border: `2px dashed ${borderColor}`,
+        background: bg,
         borderRadius: 8,
         minHeight: 200,
         fontSize: 14,
+        transition: 'background 0.15s, border-color 0.15s, color 0.15s',
       }}>
-        Add a block from the palette to get started
+        {isDraggingAny ? 'Drop here' : 'Add a block from the palette to get started'}
       </div>
     );
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-        <div style={{ flex: 1 }}>
-          {blocks.map(block => (
-            <SortableBlock
-              key={block.id}
-              block={block}
-              onChange={updated => onBlocksChange(blocks.map(b => b.id === updated.id ? updated : b))}
-              onDelete={() => onBlocksChange(blocks.filter(b => b.id !== block.id))}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+      <div style={{ flex: 1 }}>
+        {blocks.map(block => (
+          <SortableBlock
+            key={block.id}
+            block={block}
+            onChange={updated => onBlocksChange(blocks.map(b => b.id === updated.id ? updated : b))}
+            onDelete={() => onBlocksChange(blocks.filter(b => b.id !== block.id))}
+          />
+        ))}
+      </div>
+    </SortableContext>
   );
 }

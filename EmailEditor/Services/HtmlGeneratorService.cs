@@ -18,12 +18,6 @@ public class HtmlGeneratorService
         sb.AppendLine("</head>");
         sb.AppendLine("<body style=\"margin:0;padding:0;background-color:#f4f4f4;\">");
 
-        // Preview text trick — invisible text shown in inbox snippet
-        if (!string.IsNullOrEmpty(doc.PreviewText))
-        {
-            sb.AppendLine($"<div style=\"display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;\">{HtmlEncode(doc.PreviewText)}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>");
-        }
-
         // Outer centering table
         sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background-color:#f4f4f4;\">");
         sb.AppendLine("<tr>");
@@ -141,12 +135,23 @@ public class HtmlGeneratorService
         sb.AppendLine("<td style=\"padding:16px 32px;\">");
         sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
         sb.AppendLine("<tr>");
-        sb.AppendLine($"<td width=\"50%\" valign=\"top\" style=\"padding-right:8px;font-family:Arial,sans-serif;font-size:16px;color:#333333;line-height:1.6;\">");
-        sb.AppendLine(block.LeftHtmlContent);
+
+        // Left column
+        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-right:8px;\">");
+        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
+        foreach (var child in block.LeftBlocks)
+            sb.AppendLine(RenderBlock(child));
+        sb.AppendLine("</table>");
         sb.AppendLine("</td>");
-        sb.AppendLine($"<td width=\"50%\" valign=\"top\" style=\"padding-left:8px;font-family:Arial,sans-serif;font-size:16px;color:#333333;line-height:1.6;\">");
-        sb.AppendLine(block.RightHtmlContent);
+
+        // Right column
+        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-left:8px;\">");
+        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
+        foreach (var child in block.RightBlocks)
+            sb.AppendLine(RenderBlock(child));
+        sb.AppendLine("</table>");
         sb.AppendLine("</td>");
+
         sb.AppendLine("</tr>");
         sb.AppendLine("</table>");
         sb.AppendLine("</td>");

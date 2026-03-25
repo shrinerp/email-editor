@@ -16,10 +16,6 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
 
     private static object FullDocument() => new
     {
-        subject = "Test Subject",
-        previewText = "Preview snippet",
-        fromName = "Sender",
-        fromAddress = "sender@example.com",
         blocks = new object[]
         {
             new { type = "hero", imageUrl = "https://img.url/banner.jpg", headline = "Hello" },
@@ -27,7 +23,9 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             new { type = "button", label = "Click", url = "https://example.com", backgroundColor = "#000000", textColor = "#ffffff" },
             new { type = "image", imageUrl = "https://img.url/photo.jpg", altText = "Photo" },
             new { type = "divider" },
-            new { type = "twoColumn", leftHtmlContent = "<p>Left</p>", rightHtmlContent = "<p>Right</p>" },
+            new { type = "twoColumn",
+                leftBlocks = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
+                rightBlocks = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
         }
     };
 
@@ -84,14 +82,44 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
+    public async Task PostGenerate_TwoColumnWithNestedBlocksInBothColumns_RendersAllContent()
+    {
+        var doc = new
+        {
+            blocks = new object[]
+            {
+                new
+                {
+                    type = "twoColumn",
+                    leftBlocks = new object[]
+                    {
+                        new { type = "text", htmlContent = "<p>LeftText</p>" },
+                        new { type = "image", imageUrl = "https://img.url/left.jpg", altText = "left photo" }
+                    },
+                    rightBlocks = new object[]
+                    {
+                        new { type = "button", label = "RightBtn", url = "https://right.com",
+                              backgroundColor = "#000000", textColor = "#ffffff" }
+                    }
+                }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("LeftText", html);
+        Assert.Contains("https://img.url/left.jpg", html);
+        Assert.Contains("left photo", html);
+        Assert.Contains("RightBtn", html);
+        Assert.Contains("https://right.com", html);
+        Assert.Contains("50%", html);   // two-column structure present
+    }
+
+    [Fact]
     public async Task PostGenerate_ScriptInTextBlock_IsSanitized()
     {
         var doc = new
         {
-            subject = "S",
-            previewText = "P",
-            fromName = "F",
-            fromAddress = "f@f.com",
             blocks = new object[]
             {
                 new { type = "text", htmlContent = "<script>alert('xss')</script><p>Safe</p>" }

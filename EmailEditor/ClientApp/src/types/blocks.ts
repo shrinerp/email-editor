@@ -36,8 +36,8 @@ export interface DividerBlock extends BaseBlock {
 
 export interface TwoColumnBlock extends BaseBlock {
   type: 'twoColumn';
-  leftHtmlContent: string;
-  rightHtmlContent: string;
+  leftBlocks: EmailBlock[];
+  rightBlocks: EmailBlock[];
 }
 
 export type EmailBlock =
@@ -49,10 +49,6 @@ export type EmailBlock =
   | TwoColumnBlock;
 
 export interface EmailDocument {
-  subject: string;
-  previewText: string;
-  fromName: string;
-  fromAddress: string;
   blocks: EmailBlock[];
 }
 
@@ -64,6 +60,6 @@ export function createBlock(type: BlockType): EmailBlock {
     case 'button':     return { id, type, label: 'Click here', url: '', backgroundColor: '#1a1a1a', textColor: '#ffffff' };
     case 'image':      return { id, type, imageUrl: '', altText: '' };
     case 'divider':    return { id, type };
-    case 'twoColumn':  return { id, type, leftHtmlContent: '', rightHtmlContent: '' };
+    case 'twoColumn':  return { id, type, leftBlocks: [], rightBlocks: [] };
   }
 }
