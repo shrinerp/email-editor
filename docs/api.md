@@ -5,8 +5,8 @@ tags: [api, backend, csharp]
 
 # API Reference
 
-> [!note] Not Yet Implemented
-> Tracked in [#4](https://github.com/shrinerp/email-editor/issues/4). This document describes the intended design.
+> [!success] Implemented
+> `POST /api/generate` is live. See `EmailEditor/Program.cs` and `EmailEditor/Api/EmailDocumentDto.cs`.
 
 ## Base URL
 
@@ -35,29 +35,29 @@ Content-Type: application/json
   "fromAddress": "hello@acme.com",
   "blocks": [
     {
-      "$type": "hero",
+      "type": "hero",
       "imageUrl": "https://example.com/banner.jpg",
       "headline": "Big News This Week"
     },
     {
-      "$type": "text",
+      "type":"text",
       "htmlContent": "<p>Hello <strong>world</strong></p>"
     },
     {
-      "$type": "button",
+      "type":"button",
       "label": "Read More",
       "url": "https://example.com",
       "backgroundColor": "#1a1a1a",
       "textColor": "#ffffff"
     },
     {
-      "$type": "divider"
+      "type":"divider"
     }
   ]
 }
 ```
 
-**Block `$type` values**
+**Block `type` values**
 
 | Value | Block type |
 |-------|-----------|

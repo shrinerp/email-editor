@@ -12,12 +12,25 @@ React 19 + Vite (TypeScript) SPA located in `EmailEditor/ClientApp/`.
 ```
 EmailEditor/ClientApp/
 ├── src/
-│   ├── App.tsx                    ← Root component (placeholder)
+│   ├── App.tsx                         ← Root: wires palette, canvas, metadata, preview
+│   ├── types/
+│   │   └── blocks.ts                   ← TypeScript block types + createBlock()
+│   ├── api/
+│   │   └── generate.ts                 ← fetch wrapper for POST /api/generate
 │   ├── components/
-│   │   ├── editor/                ← Canvas, palette, drag-drop
-│   │   ├── blocks/                ← One component per block type
-│   │   └── preview/               ← iframe HTML preview
-│   ├── api/                       ← fetch wrapper for /api/generate
+│   │   ├── editor/
+│   │   │   ├── BlockPalette.tsx        ← Click-to-add block sidebar
+│   │   │   ├── BlockCanvas.tsx         ← dnd-kit sortable canvas + delete
+│   │   │   └── MetadataForm.tsx        ← Subject, Preview Text, From fields
+│   │   ├── blocks/
+│   │   │   ├── HeroBlockEditor.tsx
+│   │   │   ├── TextBlockEditor.tsx     ← Quill rich text
+│   │   │   ├── ButtonBlockEditor.tsx   ← Label, URL, color pickers + live preview
+│   │   │   ├── ImageBlockEditor.tsx
+│   │   │   ├── DividerBlockEditor.tsx
+│   │   │   └── TwoColumnBlockEditor.tsx ← Two Quill editors side by side
+│   │   └── preview/
+│   │       └── PreviewPanel.tsx        ← Sandboxed iframe
 │   ├── index.css
 │   └── main.tsx
 ├── public/
@@ -26,9 +39,6 @@ EmailEditor/ClientApp/
 ├── tsconfig.json
 └── package.json
 ```
-
-> [!note] Partially Implemented
-> Directory structure above reflects the intended design (#6, #7). Currently only `App.tsx` placeholder exists.
 
 ## Key Dependencies
 
@@ -44,20 +54,22 @@ EmailEditor/ClientApp/
 ### Editor Layout
 
 ```
-┌────────────────────────────────────────────────┐
-│  Subject / Preview Text / From fields          │
-├──────────────┬─────────────────────────────────┤
-│  Block       │  Canvas (drag-drop)             │
-│  Palette     │  ┌──────────────────────────┐  │
-│              │  │  HeroBlock               │  │
-│  [Hero]      │  ├──────────────────────────┤  │
-│  [Text]      │  │  TextBlock (Quill)       │  │
-│  [Button]    │  ├──────────────────────────┤  │
-│  [Image]     │  │  ButtonBlock             │  │
-│  [Divider]   │  └──────────────────────────┘  │
-│  [2-Column]  │                                 │
-│              │  [Preview]  [Download HTML]     │
-└──────────────┴─────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  ✉️ Email Editor      [👁 Preview]  [⬇ Download HTML] │  ← Header
+├──────────────┬───────────────────────────────────────┤
+│              │  Subject / Preview Text / From fields │  ← MetadataForm
+│  Block       ├───────────────────────────────────────┤
+│  Palette     │  Canvas (drag-drop)                   │  ← BlockCanvas
+│              │  ┌─────────────────────────────────┐  │
+│  🖼️ Hero     │  │ ⠿  HeroBlock               [✕] │  │
+│  📝 Text     │  ├─────────────────────────────────┤  │
+│  🔘 Button   │  │ ⠿  TextBlock (Quill)        [✕] │  │
+│  📷 Image    │  ├─────────────────────────────────┤  │
+│  ➖ Divider  │  │ ⠿  ButtonBlock             [✕] │  │
+│  ⬜ 2 Cols   │  └─────────────────────────────────┘  │
+│              ├───────────────────────────────────────┤
+│              │  [ Preview iframe renders here ]      │  ← PreviewPanel
+└──────────────┴───────────────────────────────────────┘
 ```
 
 ### Block Components (`src/components/blocks/`)
