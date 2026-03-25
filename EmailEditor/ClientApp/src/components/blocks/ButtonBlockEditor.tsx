@@ -1,21 +1,48 @@
+import { useRef } from 'react';
 import type { ButtonBlock } from '../../types/blocks';
+import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: ButtonBlock;
   onChange: (updated: ButtonBlock) => void;
 }
 
+function insertAt(value: string, token: string, start: number): string {
+  return value.slice(0, start) + token + value.slice(start);
+}
+
 export function ButtonBlockEditor({ block, onChange }: Props) {
+  const labelRef = useRef<HTMLInputElement>(null);
+  const labelCursor = useRef<number>(0);
+  const fieldPaths = useMergeFields();
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <label style={{ fontWeight: 600 }}>Button / CTA</label>
-      <input
-        type="text"
-        placeholder="Button label"
-        value={block.label}
-        onChange={e => onChange({ ...block, label: e.target.value })}
-        style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4 }}
-      />
+      <div>
+        <input
+          ref={labelRef}
+          type="text"
+          placeholder="Button label"
+          value={block.label}
+          onChange={e => onChange({ ...block, label: e.target.value })}
+          onSelect={e => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
+          onKeyUp={e => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
+          style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
+        />
+        <MergeFieldChips
+          fieldPaths={fieldPaths}
+          onInsert={token => {
+            const pos = labelCursor.current;
+            onChange({ ...block, label: insertAt(block.label, token, pos) });
+            labelCursor.current = pos + token.length;
+            requestAnimationFrame(() => {
+              labelRef.current?.focus();
+              labelRef.current?.setSelectionRange(pos + token.length, pos + token.length);
+            });
+          }}
+        />
+      </div>
       <input
         type="text"
         placeholder="URL (https://...)"

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import type { TextBlock } from '../../types/blocks';
+import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: TextBlock;
@@ -13,6 +14,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
   const quillRef = useRef<Quill | null>(null);
   const blockIdRef = useRef(block.id);
   const onChangeRef = useRef(onChange);
+  const savedSelectionRef = useRef<{ index: number; length: number } | null>(null);
 
   // Keep onChangeRef current so the Quill handler always calls the latest onChange
   useEffect(() => { onChangeRef.current = onChange; });
@@ -29,15 +31,30 @@ export function TextBlockEditor({ block, onChange }: Props) {
     quillRef.current.on('text-change', () => {
       onChangeRef.current({ ...block, id: blockIdRef.current, htmlContent: quillRef.current!.root.innerHTML });
     });
+    // Track last known selection so chip clicks can insert at the right position
+    quillRef.current.on('selection-change', (range) => {
+      if (range) savedSelectionRef.current = range;
+    });
   }, []);
 
-  // Update blockIdRef when block.id changes (shouldn't normally happen)
   useEffect(() => { blockIdRef.current = block.id; }, [block.id]);
+
+  const fieldPaths = useMergeFields();
+
+  function handleInsert(token: string) {
+    const q = quillRef.current;
+    if (!q) return;
+    const idx = savedSelectionRef.current?.index ?? q.getLength() - 1;
+    q.focus();
+    q.insertText(idx, token, 'user');
+    q.setSelection(idx + token.length, 0);
+  }
 
   return (
     <div>
       <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Text Block</label>
       <div ref={editorRef} style={{ minHeight: 100 }} />
+      <MergeFieldChips fieldPaths={fieldPaths} onInsert={handleInsert} />
     </div>
   );
 }
