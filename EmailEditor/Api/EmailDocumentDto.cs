@@ -1,13 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using EmailEditor.Models;
+using EmailEditor.Services;
 
 namespace EmailEditor.Api;
 
 // DTOs for JSON deserialization with polymorphic block types
 
 public record EmailDocumentDto(
-    List<JsonElement> Blocks
+    List<JsonElement> Blocks,
+    JsonElement? MergeData = null
 );
 
 public static class EmailDocumentDtoExtensions
@@ -76,4 +78,29 @@ public static class EmailDocumentDtoExtensions
 
     private static string GetStringOrDefault(JsonElement el, string prop, string defaultValue) =>
         el.TryGetProperty(prop, out var v) ? v.GetString() ?? defaultValue : defaultValue;
+
+    // ── Merge application ─────────────────────────────────────────────────────
+
+    public static EmailDocument ApplyMerge(EmailDocument doc, JsonElement mergeData)
+    {
+        var merged = doc.Blocks
+            .Select(b => ApplyMergeToBlock(b, mergeData))
+            .ToList()
+            .AsReadOnly();
+        return new EmailDocument(merged);
+    }
+
+    private static IEmailBlock ApplyMergeToBlock(IEmailBlock block, JsonElement data) => block switch
+    {
+        HeroBlock h => h with { Headline = MergeService.Resolve(h.Headline, data) },
+        TextBlock t => t with { HtmlContent = MergeService.Resolve(t.HtmlContent, data) },
+        ButtonBlock b => b with { Label = MergeService.Resolve(b.Label, data) },
+        ImageBlock i => i with { AltText = MergeService.Resolve(i.AltText, data) },
+        TwoColumnBlock tc => tc with
+        {
+            LeftBlocks = tc.LeftBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
+            RightBlocks = tc.RightBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
+        },
+        _ => block
+    };
 }
