@@ -1,10 +1,11 @@
 import type { EmailDocument } from '../types/blocks';
 
-export async function generateHtml(doc: EmailDocument): Promise<string> {
+export async function generateHtml(doc: EmailDocument, mergeData?: object): Promise<string> {
+  const payload = mergeData ? { ...doc, mergeData } : doc;
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(doc),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
