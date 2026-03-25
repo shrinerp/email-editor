@@ -1,4 +1,7 @@
+using EmailEditor.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<HtmlGeneratorService>();
 var app = builder.Build();
 
 app.UseDefaultFiles();
