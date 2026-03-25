@@ -129,21 +129,24 @@ export default function App() {
         blocks, activePath, arrayMove(activeContainer, activeIdx, overIdx)
       ));
     } else {
-      // Cross-container move
-      const overContainer = getContainerBlocks(blocks, overPath);
+      // Cross-container move — remove from source first, then insert into target
+      // using the UPDATED state so we don't re-introduce the stale block tree.
       const draggedBlock = activeContainer[activeIdx];
+      const newSource = activeContainer.filter(b => b.id !== activeId);
+      let updated = setContainerBlocks(blocks, activePath, newSource);
+
+      // Compute target container from the already-updated state
+      const overContainer = getContainerBlocks(updated, overPath);
       const overIdx = overContainer.findIndex(b => b.id === overId);
       // over.id is a containerId (empty drop zone) → append; otherwise insert before over item
       const insertAt = overIdx === -1 ? overContainer.length : overIdx;
 
-      const newSource = activeContainer.filter(b => b.id !== activeId);
       const newTarget = [
         ...overContainer.slice(0, insertAt),
         draggedBlock,
         ...overContainer.slice(insertAt),
       ];
 
-      let updated = setContainerBlocks(blocks, activePath, newSource);
       updated = setContainerBlocks(updated, overPath, newTarget);
       setBlocks(updated);
     }
