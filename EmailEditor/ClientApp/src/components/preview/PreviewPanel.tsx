@@ -29,7 +29,7 @@ export function PreviewPanel({ html }: Props) {
         srcDoc={html}
         title="Email Preview"
         style={{ width: '100%', height: 600, border: 'none', display: 'block' }}
-        sandbox="allow-same-origin"
+        sandbox="allow-scripts"
       />
     </div>
   );

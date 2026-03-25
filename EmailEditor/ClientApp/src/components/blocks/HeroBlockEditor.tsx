@@ -23,8 +23,13 @@ export function HeroBlockEditor({ block, onChange }: Props) {
         onChange={e => onChange({ ...block, headline: e.target.value })}
         style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4 }}
       />
-      {block.imageUrl && (
-        <img src={block.imageUrl} alt="preview" style={{ maxWidth: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 4 }} />
+      {block.imageUrl.startsWith('http') && (
+        <img
+          src={block.imageUrl}
+          alt="preview"
+          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          style={{ maxWidth: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 4 }}
+        />
       )}
     </div>
   );
