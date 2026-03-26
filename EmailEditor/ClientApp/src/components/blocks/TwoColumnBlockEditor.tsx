@@ -33,13 +33,8 @@ function ColumnContainer({
         padding: '6px 10px',
         background: '#f8f8f8',
         borderBottom: '1px solid #e0e0e0',
-        fontSize: 11,
-        fontWeight: 600,
-        color: '#666',
-        textTransform: 'uppercase' as const,
-        letterSpacing: '0.05em',
       }}>
-        {label}
+        <span className="xui-heading-xsmall">{label}</span>
       </div>
       <div style={{ padding: 8 }}>
         <BlockPalette onAdd={handleAdd} compact />
@@ -54,7 +49,7 @@ function ColumnContainer({
 export function TwoColumnBlockEditor({ block, onChange }: Props) {
   return (
     <div>
-      <label style={{ fontWeight: 600, display: 'block', marginBottom: 8 }}>Two Columns</label>
+      <p className="xui-heading-item" style={{ margin: '0 0 8px' }}>Two Columns</p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <ColumnContainer
           label="Left"

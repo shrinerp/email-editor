@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import XUITextInput from '@xero/xui/react/textinput';
 import type { HeroBlock } from '../../types/blocks';
 import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
@@ -17,26 +18,29 @@ export function HeroBlockEditor({ block, onChange }: Props) {
   const headlineCursor = useRef<number>(0);
   const fieldPaths = useMergeFields();
 
+  const headlineInputProps = {
+    onSelect: (e: { target: EventTarget | null }) => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
+    onKeyUp: (e: { target: EventTarget | null }) => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <label style={{ fontWeight: 600 }}>Hero Block</label>
-      <input
-        type="text"
+      <p className="xui-heading-item" style={{ margin: 0 }}>Hero Block</p>
+      <XUITextInput
+        label="Image URL"
         placeholder="Image URL"
         value={block.imageUrl}
         onChange={e => onChange({ ...block, imageUrl: e.target.value })}
-        style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4 }}
       />
       <div>
-        <input
-          ref={headlineRef}
-          type="text"
+        <XUITextInput
+          label="Headline"
           placeholder="Headline"
           value={block.headline}
+          inputRef={headlineRef}
           onChange={e => onChange({ ...block, headline: e.target.value })}
-          onSelect={e => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
-          onKeyUp={e => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
-          style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
+          inputProps={headlineInputProps}
         />
         <MergeFieldSelect
           fieldPaths={fieldPaths}
@@ -45,10 +49,9 @@ export function HeroBlockEditor({ block, onChange }: Props) {
             const next = insertAt(block.headline, token, pos);
             onChange({ ...block, headline: next });
             headlineCursor.current = pos + token.length;
-            // restore focus + cursor
             requestAnimationFrame(() => {
-              headlineRef.current?.focus();
-              headlineRef.current?.setSelectionRange(pos + token.length, pos + token.length);
+              (headlineRef.current as HTMLInputElement | null)?.focus();
+              (headlineRef.current as HTMLInputElement | null)?.setSelectionRange(pos + token.length, pos + token.length);
             });
           }}
         />

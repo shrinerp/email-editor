@@ -111,7 +111,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Text Block</label>
+      <p className="xui-heading-item" style={{ margin: '0 0 6px' }}>Text Block</p>
       <div ref={editorRef} style={{ minHeight: 100 }} />
 
       {/* {{ Autocomplete dropdown */}
