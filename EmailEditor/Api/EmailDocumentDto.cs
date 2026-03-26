@@ -65,8 +65,20 @@ public static class EmailDocumentDtoExtensions
     private static ColumnsBlock DeserializeColumnsBlock(JsonElement el, Func<string, string> sanitize)
     {
         var cols = new List<IReadOnlyList<IEmailBlock>>();
-        for (int i = 0; el.TryGetProperty($"column{i}", out var col); i++)
-            cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+
+        // Primary format: columns: [[...], [...]] (natural JSON.stringify output from frontend)
+        if (el.TryGetProperty("columns", out var colsArr) && colsArr.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var col in colsArr.EnumerateArray())
+                cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+        }
+        else
+        {
+            // Fallback: column0, column1, ... (used in tests)
+            for (int i = 0; el.TryGetProperty($"column{i}", out var col); i++)
+                cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+        }
+
         while (cols.Count < 2) cols.Add(Array.Empty<IEmailBlock>().ToList().AsReadOnly());
         return new ColumnsBlock(cols.AsReadOnly());
     }

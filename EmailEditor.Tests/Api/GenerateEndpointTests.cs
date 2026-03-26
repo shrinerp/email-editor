@@ -117,6 +117,35 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
+    public async Task PostGenerate_ColumnsWithArrayFormat_RendersAllContent()
+    {
+        // Validates the natural JSON.stringify format from the frontend
+        var doc = new
+        {
+            blocks = new object[]
+            {
+                new
+                {
+                    type = "columns",
+                    columns = new object[][]
+                    {
+                        new object[] { new { type = "text", htmlContent = "<p>ColA</p>" } },
+                        new object[] { new { type = "text", htmlContent = "<p>ColB</p>" } },
+                        new object[] { new { type = "text", htmlContent = "<p>ColC</p>" } },
+                    }
+                }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("ColA", html);
+        Assert.Contains("ColB", html);
+        Assert.Contains("ColC", html);
+        Assert.Contains("33%", html);   // three-column width
+    }
+
+    [Fact]
     public async Task PostGenerate_WithMergeData_ResolvesTokensInOutput()
     {
         var doc = new
