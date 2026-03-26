@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { HeroBlock } from '../../types/blocks';
-import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
+import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: HeroBlock;
@@ -38,7 +38,7 @@ export function HeroBlockEditor({ block, onChange }: Props) {
           onKeyUp={e => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
           style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
         />
-        <MergeFieldChips
+        <MergeFieldSelect
           fieldPaths={fieldPaths}
           onInsert={token => {
             const pos = headlineCursor.current;
