@@ -4,14 +4,15 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    // @xero/xui is installed as a symlinked local path and ships CJS files.
-    // List each subpath import explicitly — the root entry alone doesn't
-    // cause Vite to pre-bundle deep imports.
-    include: [
-      '@xero/xui/react/selectbox',
-      '@xero/xui/react/textinput',
-      '@xero/xui/react/button',
+  resolve: {
+    alias: [
+      // @xero/xui ships CJS in react/ and ESM in react-es6/.
+      // TypeScript resolves types from react/ (.d.ts files live there),
+      // but Vite must serve the ESM version to avoid CJS/default-export issues.
+      {
+        find: /^@xero\/xui\/react\//,
+        replacement: '@xero/xui/react-es6/',
+      },
     ],
   },
   build: {
