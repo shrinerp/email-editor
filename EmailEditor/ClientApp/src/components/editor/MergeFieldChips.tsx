@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from 'react';
 import XUISelectBox, { XUISelectBoxOption } from '@xero/xui/react/selectbox';
-console.log('[MergeFieldChips] XUISelectBox loaded:', XUISelectBox, 'XUISelectBoxOption:', XUISelectBoxOption);
 
 // ── Context ───────────────────────────────────────────────────────────────────
 

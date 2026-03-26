@@ -9,6 +9,7 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: string }[] = [
   { type: 'image',     label: 'Image',      icon: '📷' },
   { type: 'divider',   label: 'Divider',    icon: '➖' },
   { type: 'twoColumn', label: '2 Columns',  icon: '⬜' },
+  { type: 'header',    label: 'Header',     icon: '📋' },
 ];
 
 interface Props {

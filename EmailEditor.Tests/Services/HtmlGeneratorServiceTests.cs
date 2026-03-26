@@ -247,4 +247,38 @@ public class HtmlGeneratorServiceTests
         Assert.DoesNotContain("<style>", html);
         Assert.DoesNotContain("<style ", html);
     }
+
+    // ── HeaderBlock ───────────────────────────────────────────────────────
+
+    [Fact]
+    public void Generate_HeaderBlock_ContainsText()
+    {
+        var html = _sut.Generate(DocWith(new HeaderBlock("Welcome to Acme", 1, "left")));
+        Assert.Contains("Welcome to Acme", html);
+    }
+
+    [Fact]
+    public void Generate_HeaderBlock_UsesCorrectHeadingTag()
+    {
+        var html = _sut.Generate(DocWith(new HeaderBlock("Section Title", 2, "center")));
+        Assert.Contains("<h2", html);
+        Assert.Contains("</h2>", html);
+    }
+
+    [Fact]
+    public void Generate_HeaderBlock_UsesTableLayout()
+    {
+        var html = _sut.Generate(DocWith(new HeaderBlock("Title", 1, "left")));
+        Assert.Contains("<tr>", html);
+        Assert.Contains("<td", html);
+        Assert.DoesNotContain("display:flex", html);
+        Assert.DoesNotContain("display:grid", html);
+    }
+
+    [Fact]
+    public void Generate_HeaderBlock_AppliesAlignment()
+    {
+        var html = _sut.Generate(DocWith(new HeaderBlock("Title", 1, "center")));
+        Assert.Contains("text-align:center", html);
+    }
 }

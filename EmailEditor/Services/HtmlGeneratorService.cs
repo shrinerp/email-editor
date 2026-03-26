@@ -50,6 +50,7 @@ public class HtmlGeneratorService
         ImageBlock image       => RenderImage(image),
         DividerBlock divider   => RenderDivider(divider),
         TwoColumnBlock twoCol  => RenderTwoColumn(twoCol),
+        HeaderBlock header     => RenderHeader(header),
         _                      => string.Empty
     };
 
@@ -123,6 +124,17 @@ public class HtmlGeneratorService
         sb.AppendLine("<tr>");
         sb.AppendLine("<td style=\"padding:16px 32px;\">");
         sb.AppendLine("<hr style=\"border:none;border-top:1px solid #e0e0e0;margin:0;\">");
+        sb.AppendLine("</td>");
+        sb.AppendLine("</tr>");
+        return sb.ToString();
+    }
+
+    private static string RenderHeader(HeaderBlock block)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("<tr>");
+        sb.AppendLine($"<td style=\"padding:16px 32px;font-family:Arial,sans-serif;\">");
+        sb.AppendLine($"<h{block.Level} style=\"margin:0;color:#1a1a1a;text-align:{block.Alignment};\">{HtmlEncode(block.Text)}</h{block.Level}>");
         sb.AppendLine("</td>");
         sb.AppendLine("</tr>");
         return sb.ToString();

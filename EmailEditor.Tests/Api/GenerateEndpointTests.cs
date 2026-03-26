@@ -26,6 +26,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             new { type = "twoColumn",
                 leftBlocks = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
                 rightBlocks = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
+            new { type = "header", text = "Section", level = 1, alignment = "center" },
         }
     };
 
@@ -127,6 +128,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
                 new { type = "text", htmlContent = "<p>Welcome to {{company}}</p>" },
                 new { type = "button", label = "Hi {{person.name}}", url = "https://x.com" },
                 new { type = "image", imageUrl = "https://img.url/x.jpg", altText = "{{person.name}} photo" },
+                new { type = "header", text = "Dear {{person.name}}", level = 1, alignment = "left" },
             }
         };
         var response = await _client.PostAsJsonAsync("/api/generate", doc);
@@ -136,6 +138,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
         Assert.Contains("Welcome to Acme", html);
         Assert.Contains("Hi Alice", html);
         Assert.Contains("Alice photo", html);
+        Assert.Contains("Dear Alice", html);
         Assert.DoesNotContain("{{person.name}}", html);
         Assert.DoesNotContain("{{company}}", html);
     }

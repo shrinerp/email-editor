@@ -51,6 +51,11 @@ public static class EmailDocumentDtoExtensions
 
             "divider" => new DividerBlock(),
 
+            "header" => new HeaderBlock(
+                GetString(el, "text"),
+                el.TryGetProperty("level", out var lv) && lv.TryGetInt32(out var lvInt) ? lvInt : 1,
+                GetStringOrDefault(el, "alignment", "left")),
+
             "twoColumn" => new TwoColumnBlock(
                 DeserializeBlockList(GetArray(el, "leftBlocks"), sanitize),
                 DeserializeBlockList(GetArray(el, "rightBlocks"), sanitize)),
@@ -96,6 +101,7 @@ public static class EmailDocumentDtoExtensions
         TextBlock t => t with { HtmlContent = MergeService.Resolve(t.HtmlContent, data) },
         ButtonBlock b => b with { Label = MergeService.Resolve(b.Label, data) },
         ImageBlock i => i with { AltText = MergeService.Resolve(i.AltText, data) },
+        HeaderBlock h => h with { Text = MergeService.Resolve(h.Text, data) },
         TwoColumnBlock tc => tc with
         {
             LeftBlocks = tc.LeftBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),

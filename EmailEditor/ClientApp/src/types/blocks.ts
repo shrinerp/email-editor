@@ -1,4 +1,4 @@
-export type BlockType = 'hero' | 'text' | 'button' | 'image' | 'divider' | 'twoColumn';
+export type BlockType = 'hero' | 'text' | 'button' | 'image' | 'divider' | 'twoColumn' | 'header';
 
 export interface BaseBlock {
   id: string;
@@ -40,13 +40,21 @@ export interface TwoColumnBlock extends BaseBlock {
   rightBlocks: EmailBlock[];
 }
 
+export interface HeaderBlock extends BaseBlock {
+  type: 'header';
+  text: string;
+  level: 1 | 2 | 3;
+  alignment: 'left' | 'center' | 'right';
+}
+
 export type EmailBlock =
   | HeroBlock
   | TextBlock
   | ButtonBlock
   | ImageBlock
   | DividerBlock
-  | TwoColumnBlock;
+  | TwoColumnBlock
+  | HeaderBlock;
 
 export interface EmailDocument {
   blocks: EmailBlock[];
@@ -61,5 +69,6 @@ export function createBlock(type: BlockType): EmailBlock {
     case 'image':      return { id, type, imageUrl: '', altText: '' };
     case 'divider':    return { id, type };
     case 'twoColumn':  return { id, type, leftBlocks: [], rightBlocks: [] };
+    case 'header':     return { id, type, text: '', level: 1, alignment: 'left' };
   }
 }
