@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    // Force a single copy of React — XUI is a symlinked local package and
+    // esbuild pre-bundling can pull React from /xui/node_modules/react
+    // instead of the app's copy, causing the "older version" error.
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
     alias: [
       // @xero/xui ships CJS in react/ and ESM in react-es6/.
       // TypeScript resolves types from react/ (.d.ts files live there),
