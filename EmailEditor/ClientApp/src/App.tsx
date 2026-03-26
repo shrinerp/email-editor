@@ -16,7 +16,7 @@ import { BlockCanvas } from './components/editor/BlockCanvas';
 import { PreviewModal } from './components/preview/PreviewModal';
 import { MergeFieldsContext } from './components/editor/MergeFieldChips';
 import { flattenKeys } from './components/editor/DataTab';
-import type { EmailBlock, BlockType, TwoColumnBlock } from './types/blocks';
+import type { EmailBlock, BlockType, ColumnsBlock } from './types/blocks';
 import { createBlock } from './types/blocks';
 import { generateHtml } from './api/generate';
 
@@ -24,41 +24,38 @@ import { generateHtml } from './api/generate';
 
 type ContainerPath =
   | { kind: 'root' }
-  | { kind: 'column'; twoColId: string; side: 'left' | 'right' };
+  | { kind: 'column'; colsId: string; colIndex: number };
 
 function findContainer(blocks: EmailBlock[], blockId: string): ContainerPath | null {
   if (blocks.some(b => b.id === blockId)) return { kind: 'root' };
   for (const b of blocks) {
-    if (b.type !== 'twoColumn') continue;
-    if (b.leftBlocks.some(c => c.id === blockId))
-      return { kind: 'column', twoColId: b.id, side: 'left' };
-    if (b.rightBlocks.some(c => c.id === blockId))
-      return { kind: 'column', twoColId: b.id, side: 'right' };
+    if (b.type !== 'columns') continue;
+    for (let i = 0; i < b.columns.length; i++) {
+      if (b.columns[i].some(c => c.id === blockId))
+        return { kind: 'column', colsId: b.id, colIndex: i };
+    }
   }
   return null;
 }
 
 function parseContainerId(id: string): ContainerPath | null {
   if (id === 'root') return { kind: 'root' };
-  const sep = id.lastIndexOf(':');
-  if (sep === -1) return null;
-  const twoColId = id.slice(0, sep);
-  const side = id.slice(sep + 1);
-  if (side !== 'left' && side !== 'right') return null;
-  return { kind: 'column', twoColId, side };
+  const match = id.match(/^(.+):col(\d+)$/);
+  if (!match) return null;
+  return { kind: 'column', colsId: match[1], colIndex: Number(match[2]) };
 }
 
 function pathsMatch(a: ContainerPath, b: ContainerPath): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === 'column' && b.kind === 'column')
-    return a.twoColId === b.twoColId && a.side === b.side;
+    return a.colsId === b.colsId && a.colIndex === b.colIndex;
   return true;
 }
 
 function getContainerBlocks(blocks: EmailBlock[], path: ContainerPath): EmailBlock[] {
   if (path.kind === 'root') return blocks;
-  const tc = blocks.find(b => b.id === path.twoColId) as TwoColumnBlock;
-  return path.side === 'left' ? tc.leftBlocks : tc.rightBlocks;
+  const cb = blocks.find(b => b.id === path.colsId) as ColumnsBlock;
+  return cb.columns[path.colIndex];
 }
 
 function setContainerBlocks(
@@ -66,10 +63,9 @@ function setContainerBlocks(
 ): EmailBlock[] {
   if (path.kind === 'root') return items;
   return blocks.map(b => {
-    if (b.id !== path.twoColId || b.type !== 'twoColumn') return b;
-    return path.side === 'left'
-      ? { ...b, leftBlocks: items }
-      : { ...b, rightBlocks: items };
+    if (b.id !== path.colsId || b.type !== 'columns') return b;
+    const cols = b.columns.map((col, i) => i === path.colIndex ? items : col);
+    return { ...b, columns: cols };
   });
 }
 
@@ -78,9 +74,11 @@ function setContainerBlocks(
 function findBlock(blocks: EmailBlock[], id: string): EmailBlock | null {
   for (const b of blocks) {
     if (b.id === id) return b;
-    if (b.type === 'twoColumn') {
-      const found = findBlock(b.leftBlocks, id) ?? findBlock(b.rightBlocks, id);
-      if (found) return found;
+    if (b.type === 'columns') {
+      for (const col of b.columns) {
+        const found = findBlock(col, id);
+        if (found) return found;
+      }
     }
   }
   return null;
@@ -92,7 +90,8 @@ const blockTypeLabel: Record<string, string> = {
   button: 'Button',
   image: 'Image',
   divider: 'Divider',
-  twoColumn: 'Two Columns',
+  columns: 'Columns',
+  header: 'Header',
 };
 
 // ── App ───────────────────────────────────────────────────────────────────────

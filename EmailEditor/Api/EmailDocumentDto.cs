@@ -56,12 +56,19 @@ public static class EmailDocumentDtoExtensions
                 el.TryGetProperty("level", out var lv) && lv.TryGetInt32(out var lvInt) ? lvInt : 1,
                 GetStringOrDefault(el, "alignment", "left")),
 
-            "twoColumn" => new TwoColumnBlock(
-                DeserializeBlockList(GetArray(el, "leftBlocks"), sanitize),
-                DeserializeBlockList(GetArray(el, "rightBlocks"), sanitize)),
+            "columns" => DeserializeColumnsBlock(el, sanitize),
 
             _ => null
         };
+    }
+
+    private static ColumnsBlock DeserializeColumnsBlock(JsonElement el, Func<string, string> sanitize)
+    {
+        var cols = new List<IReadOnlyList<IEmailBlock>>();
+        for (int i = 0; el.TryGetProperty($"column{i}", out var col); i++)
+            cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+        while (cols.Count < 2) cols.Add(Array.Empty<IEmailBlock>().ToList().AsReadOnly());
+        return new ColumnsBlock(cols.AsReadOnly());
     }
 
     private static IReadOnlyList<IEmailBlock> DeserializeBlockList(
@@ -102,10 +109,15 @@ public static class EmailDocumentDtoExtensions
         ButtonBlock b => b with { Label = MergeService.Resolve(b.Label, data) },
         ImageBlock i => i with { AltText = MergeService.Resolve(i.AltText, data) },
         HeaderBlock h => h with { Text = MergeService.Resolve(h.Text, data) },
-        TwoColumnBlock tc => tc with
+        ColumnsBlock c => c with
         {
-            LeftBlocks = tc.LeftBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
-            RightBlocks = tc.RightBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
+            Columns = c.Columns
+                .Select(col => (IReadOnlyList<IEmailBlock>)col
+                    .Select(b => ApplyMergeToBlock(b, data))
+                    .ToList()
+                    .AsReadOnly())
+                .ToList()
+                .AsReadOnly(),
         },
         _ => block
     };

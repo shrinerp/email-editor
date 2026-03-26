@@ -23,9 +23,9 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             new { type = "button", label = "Click", url = "https://example.com", backgroundColor = "#000000", textColor = "#ffffff" },
             new { type = "image", imageUrl = "https://img.url/photo.jpg", altText = "Photo" },
             new { type = "divider" },
-            new { type = "twoColumn",
-                leftBlocks = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
-                rightBlocks = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
+            new { type = "columns",
+                column0 = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
+                column1 = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
             new { type = "header", text = "Section", level = 1, alignment = "center" },
         }
     };
@@ -83,7 +83,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task PostGenerate_TwoColumnWithNestedBlocksInBothColumns_RendersAllContent()
+    public async Task PostGenerate_ColumnsWithNestedBlocksInBothColumns_RendersAllContent()
     {
         var doc = new
         {
@@ -91,13 +91,13 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             {
                 new
                 {
-                    type = "twoColumn",
-                    leftBlocks = new object[]
+                    type = "columns",
+                    column0 = new object[]
                     {
                         new { type = "text", htmlContent = "<p>LeftText</p>" },
                         new { type = "image", imageUrl = "https://img.url/left.jpg", altText = "left photo" }
                     },
-                    rightBlocks = new object[]
+                    column1 = new object[]
                     {
                         new { type = "button", label = "RightBtn", url = "https://right.com",
                               backgroundColor = "#000000", textColor = "#ffffff" }
@@ -160,7 +160,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task PostGenerate_WithMergeData_TwoColumnNestedBlocksResolved()
+    public async Task PostGenerate_WithMergeData_ColumnsNestedBlocksResolved()
     {
         var doc = new
         {
@@ -169,9 +169,9 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             {
                 new
                 {
-                    type = "twoColumn",
-                    leftBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.left}}</p>" } },
-                    rightBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.right}}</p>" } }
+                    type = "columns",
+                    column0 = new object[] { new { type = "text", htmlContent = "<p>{{col.left}}</p>" } },
+                    column1 = new object[] { new { type = "text", htmlContent = "<p>{{col.right}}</p>" } }
                 }
             }
         };

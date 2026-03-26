@@ -8,7 +8,7 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: string }[] = [
   { type: 'button',    label: 'Button',     icon: '🔘' },
   { type: 'image',     label: 'Image',      icon: '📷' },
   { type: 'divider',   label: 'Divider',    icon: '➖' },
-  { type: 'twoColumn', label: '2 Columns',  icon: '⬜' },
+  { type: 'columns',   label: 'Columns',    icon: '⬜' },
   { type: 'header',    label: 'Header',     icon: '📋' },
 ];
 

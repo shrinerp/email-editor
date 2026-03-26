@@ -179,42 +179,53 @@ public class HtmlGeneratorServiceTests
         Assert.Contains("border:none", html);
     }
 
-    // ── TwoColumnBlock ────────────────────────────────────────────────────
+    // ── ColumnsBlock ───────────────────────────────────────────────────────
 
-    private static TwoColumnBlock TwoCol(string leftText, string rightText) =>
-        new(
-            new List<IEmailBlock> { new TextBlock($"<p>{leftText}</p>") }.AsReadOnly(),
-            new List<IEmailBlock> { new TextBlock($"<p>{rightText}</p>") }.AsReadOnly());
+    private static ColumnsBlock Cols(params string[] texts) =>
+        new(texts
+            .Select(t => (IReadOnlyList<IEmailBlock>)new List<IEmailBlock> { new TextBlock($"<p>{t}</p>") }.AsReadOnly())
+            .ToList()
+            .AsReadOnly());
 
     [Fact]
-    public void Generate_TwoColumnBlock_ContainsBothColumns()
+    public void Generate_ColumnsBlock_TwoColumns_RendersBothColumns()
     {
-        var html = _sut.Generate(DocWith(TwoCol("Left", "Right")));
+        var html = _sut.Generate(DocWith(Cols("Left", "Right")));
         Assert.Contains("Left", html);
         Assert.Contains("Right", html);
     }
 
     [Fact]
-    public void Generate_TwoColumnBlock_UsesFiftyPercentWidth()
+    public void Generate_ColumnsBlock_TwoColumns_UsesFiftyPercentWidth()
     {
-        var html = _sut.Generate(DocWith(TwoCol("L", "R")));
+        var html = _sut.Generate(DocWith(Cols("L", "R")));
         Assert.Contains("50%", html);
     }
 
     [Fact]
-    public void Generate_TwoColumnBlock_UsesTableLayout()
+    public void Generate_ColumnsBlock_ThreeColumns_UsesThirtyThreePercentWidth()
     {
-        var html = _sut.Generate(DocWith(TwoCol("L", "R")));
-        Assert.Contains("<table", html);
-        Assert.DoesNotContain("display:flex", html);
+        var html = _sut.Generate(DocWith(Cols("A", "B", "C")));
+        Assert.Contains("33%", html);
     }
 
     [Fact]
-    public void Generate_TwoColumnBlock_ChildBlocksRenderedInCorrectColumn()
+    public void Generate_ColumnsBlock_UsesTableLayout()
     {
-        var block = new TwoColumnBlock(
+        var html = _sut.Generate(DocWith(Cols("L", "R")));
+        Assert.Contains("<table", html);
+        Assert.DoesNotContain("display:flex", html);
+        Assert.DoesNotContain("display:grid", html);
+    }
+
+    [Fact]
+    public void Generate_ColumnsBlock_ChildBlocksRenderedInCorrectColumn()
+    {
+        var block = new ColumnsBlock(new List<IReadOnlyList<IEmailBlock>>
+        {
             new List<IEmailBlock> { new TextBlock("<p>LeftContent</p>") }.AsReadOnly(),
-            new List<IEmailBlock> { new ButtonBlock("RightBtn", "https://right.com") }.AsReadOnly());
+            new List<IEmailBlock> { new ButtonBlock("RightBtn", "https://right.com") }.AsReadOnly(),
+        }.AsReadOnly());
         var html = _sut.Generate(DocWith(block));
         Assert.Contains("LeftContent", html);
         Assert.Contains("RightBtn", html);
@@ -222,11 +233,13 @@ public class HtmlGeneratorServiceTests
     }
 
     [Fact]
-    public void Generate_TwoColumnBlock_EmptyColumnsDoNotThrow()
+    public void Generate_ColumnsBlock_EmptyColumnsDoNotThrow()
     {
-        var block = new TwoColumnBlock(
+        var block = new ColumnsBlock(new List<IReadOnlyList<IEmailBlock>>
+        {
             new List<IEmailBlock>().AsReadOnly(),
-            new List<IEmailBlock>().AsReadOnly());
+            new List<IEmailBlock>().AsReadOnly(),
+        }.AsReadOnly());
         var html = _sut.Generate(DocWith(block));
         Assert.Contains("</html>", html);
     }
@@ -242,7 +255,7 @@ public class HtmlGeneratorServiceTests
             new ButtonBlock("B", "https://url.com"),
             new ImageBlock("https://img.url", "alt"),
             new DividerBlock(),
-            TwoCol("L", "R")
+            Cols("L", "R")
         ));
         Assert.DoesNotContain("<style>", html);
         Assert.DoesNotContain("<style ", html);
