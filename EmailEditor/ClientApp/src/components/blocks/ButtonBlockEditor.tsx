@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { ButtonBlock } from '../../types/blocks';
-import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
+import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: ButtonBlock;
@@ -30,7 +30,7 @@ export function ButtonBlockEditor({ block, onChange }: Props) {
           onKeyUp={e => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
           style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
         />
-        <MergeFieldChips
+        <MergeFieldSelect
           fieldPaths={fieldPaths}
           onInsert={token => {
             const pos = labelCursor.current;

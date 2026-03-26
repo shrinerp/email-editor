@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import type { TextBlock } from '../../types/blocks';
-import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
+import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: TextBlock;
@@ -157,7 +157,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
         </div>
       )}
 
-      <MergeFieldChips fieldPaths={fieldPaths} onInsert={handleInsert} />
+      <MergeFieldSelect fieldPaths={fieldPaths} onInsert={handleInsert} />
     </div>
   );
 }

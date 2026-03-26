@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { ImageBlock } from '../../types/blocks';
-import { MergeFieldChips, useMergeFields } from '../editor/MergeFieldChips';
+import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
 interface Props {
   block: ImageBlock;
@@ -37,7 +37,7 @@ export function ImageBlockEditor({ block, onChange }: Props) {
           onKeyUp={e => { altCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
           style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
         />
-        <MergeFieldChips
+        <MergeFieldSelect
           fieldPaths={fieldPaths}
           onInsert={token => {
             const pos = altCursor.current;
