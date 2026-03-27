@@ -20,8 +20,7 @@ export function HeaderBlockEditor({ block, onChange }: Props) {
   const textInputProps = {
     onSelect: (e: { target: EventTarget | null }) => { textCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
     onKeyUp:  (e: { target: EventTarget | null }) => { textCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

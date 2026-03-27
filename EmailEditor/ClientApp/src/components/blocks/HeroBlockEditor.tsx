@@ -21,8 +21,7 @@ export function HeroBlockEditor({ block, onChange }: Props) {
   const headlineInputProps = {
     onSelect: (e: { target: EventTarget | null }) => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
     onKeyUp: (e: { target: EventTarget | null }) => { headlineCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

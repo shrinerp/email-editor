@@ -20,8 +20,7 @@ export function ButtonBlockEditor({ block, onChange }: Props) {
   const labelInputProps = {
     onSelect: (e: { target: EventTarget | null }) => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
     onKeyUp: (e: { target: EventTarget | null }) => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

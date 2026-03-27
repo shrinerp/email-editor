@@ -227,7 +227,9 @@ export default function App() {
         alignItems: 'center',
         gap: 16,
       }}>
-        <span style={{ fontWeight: 700, fontSize: 18, flex: 1 }}>✉️ Email Editor</span>
+        <span style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <img src="/xero-logo.png" alt="Xero" style={{ height: 24 }} />
+        </span>
         <button
           onClick={handlePreview}
           disabled={loading}
