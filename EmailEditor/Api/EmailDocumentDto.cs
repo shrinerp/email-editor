@@ -51,12 +51,36 @@ public static class EmailDocumentDtoExtensions
 
             "divider" => new DividerBlock(),
 
-            "twoColumn" => new TwoColumnBlock(
-                DeserializeBlockList(GetArray(el, "leftBlocks"), sanitize),
-                DeserializeBlockList(GetArray(el, "rightBlocks"), sanitize)),
+            "header" => new HeaderBlock(
+                GetString(el, "text"),
+                el.TryGetProperty("level", out var lv) && lv.TryGetInt32(out var lvInt) ? lvInt : 1,
+                GetStringOrDefault(el, "alignment", "left")),
+
+            "columns" => DeserializeColumnsBlock(el, sanitize),
 
             _ => null
         };
+    }
+
+    private static ColumnsBlock DeserializeColumnsBlock(JsonElement el, Func<string, string> sanitize)
+    {
+        var cols = new List<IReadOnlyList<IEmailBlock>>();
+
+        // Primary format: columns: [[...], [...]] (natural JSON.stringify output from frontend)
+        if (el.TryGetProperty("columns", out var colsArr) && colsArr.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var col in colsArr.EnumerateArray())
+                cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+        }
+        else
+        {
+            // Fallback: column0, column1, ... (used in tests)
+            for (int i = 0; el.TryGetProperty($"column{i}", out var col); i++)
+                cols.Add(DeserializeBlockList(col.EnumerateArray(), sanitize));
+        }
+
+        while (cols.Count < 2) cols.Add(Array.Empty<IEmailBlock>().ToList().AsReadOnly());
+        return new ColumnsBlock(cols.AsReadOnly());
     }
 
     private static IReadOnlyList<IEmailBlock> DeserializeBlockList(
@@ -96,10 +120,16 @@ public static class EmailDocumentDtoExtensions
         TextBlock t => t with { HtmlContent = MergeService.Resolve(t.HtmlContent, data) },
         ButtonBlock b => b with { Label = MergeService.Resolve(b.Label, data) },
         ImageBlock i => i with { AltText = MergeService.Resolve(i.AltText, data) },
-        TwoColumnBlock tc => tc with
+        HeaderBlock h => h with { Text = MergeService.Resolve(h.Text, data) },
+        ColumnsBlock c => c with
         {
-            LeftBlocks = tc.LeftBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
-            RightBlocks = tc.RightBlocks.Select(b => ApplyMergeToBlock(b, data)).ToList().AsReadOnly(),
+            Columns = c.Columns
+                .Select(col => (IReadOnlyList<IEmailBlock>)col
+                    .Select(b => ApplyMergeToBlock(b, data))
+                    .ToList()
+                    .AsReadOnly())
+                .ToList()
+                .AsReadOnly(),
         },
         _ => block
     };

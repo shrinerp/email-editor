@@ -14,7 +14,8 @@ import { TextBlockEditor } from '../blocks/TextBlockEditor';
 import { ButtonBlockEditor } from '../blocks/ButtonBlockEditor';
 import { ImageBlockEditor } from '../blocks/ImageBlockEditor';
 import { DividerBlockEditor } from '../blocks/DividerBlockEditor';
-import { TwoColumnBlockEditor } from '../blocks/TwoColumnBlockEditor';
+import { ColumnsBlockEditor } from '../blocks/ColumnsBlockEditor';
+import { HeaderBlockEditor } from '../blocks/HeaderBlockEditor';
 
 function BlockEditor({ block, onChange }: { block: EmailBlock; onChange: (b: EmailBlock) => void }) {
   switch (block.type) {
@@ -23,7 +24,8 @@ function BlockEditor({ block, onChange }: { block: EmailBlock; onChange: (b: Ema
     case 'button':    return <ButtonBlockEditor block={block} onChange={onChange} />;
     case 'image':     return <ImageBlockEditor block={block} onChange={onChange} />;
     case 'divider':   return <DividerBlockEditor />;
-    case 'twoColumn': return <TwoColumnBlockEditor block={block} onChange={onChange} />;
+    case 'columns':   return <ColumnsBlockEditor block={block} onChange={onChange} />;
+    case 'header':    return <HeaderBlockEditor block={block} onChange={onChange} />;
   }
 }
 

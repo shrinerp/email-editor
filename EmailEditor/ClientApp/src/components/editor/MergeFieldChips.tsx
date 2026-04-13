@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import XUISelectBox, { XUISelectBoxOption } from '@xero/xui/react/selectbox';
 
 // ── Context ───────────────────────────────────────────────────────────────────
 
@@ -15,41 +16,33 @@ interface Props {
 }
 
 export function MergeFieldSelect({ fieldPaths, onInsert }: Props) {
-  const [value, setValue] = useState('');
+  const [selected, setSelected] = useState('');
   const empty = fieldPaths.length === 0;
 
   return (
-    <select
-      value={value}
-      disabled={empty}
-      onChange={e => {
-        const path = e.target.value;
-        if (!path) return;
-        onInsert(`{{${path}}}`);
-        setValue('');
-      }}
-      style={{
-        marginTop: 4,
-        padding: '3px 6px',
-        fontSize: 12,
-        fontFamily: 'monospace',
-        border: '1px solid #d1d5db',
-        borderRadius: 4,
-        color: empty ? '#aaa' : '#1d4ed8',
-        background: '#fff',
-        cursor: empty ? 'default' : 'pointer',
-        width: '100%',
-        boxSizing: 'border-box',
+    <XUISelectBox
+      label="Insert field"
+      isLabelHidden
+      buttonContent={selected || 'Insert field\u2026'}
+      isDisabled={empty}
+      size="small"
+      onSelect={(value: string) => {
+        if (!value) return;
+        onInsert(`{{${value}}}`);
+        setSelected('');
       }}
     >
-      <option value="" disabled>
-        {empty ? 'No merge fields defined' : 'Insert field…'}
-      </option>
-      {fieldPaths.map(path => (
-        <option key={path} value={path}>
-          {`{{${path}}}`}
-        </option>
-      ))}
-    </select>
+      {empty ? (
+        <XUISelectBoxOption key="_empty" value="" id="_empty" isDisabled>
+          No merge fields defined
+        </XUISelectBoxOption>
+      ) : (
+        fieldPaths.map(path => (
+          <XUISelectBoxOption key={path} value={path} id={path}>
+            {`{{${path}}}`}
+          </XUISelectBoxOption>
+        ))
+      )}
+    </XUISelectBox>
   );
 }

@@ -23,9 +23,10 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             new { type = "button", label = "Click", url = "https://example.com", backgroundColor = "#000000", textColor = "#ffffff" },
             new { type = "image", imageUrl = "https://img.url/photo.jpg", altText = "Photo" },
             new { type = "divider" },
-            new { type = "twoColumn",
-                leftBlocks = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
-                rightBlocks = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
+            new { type = "columns",
+                column0 = new object[] { new { type = "text", htmlContent = "<p>Left</p>" } },
+                column1 = new object[] { new { type = "text", htmlContent = "<p>Right</p>" } } },
+            new { type = "header", text = "Section", level = 1, alignment = "center" },
         }
     };
 
@@ -82,7 +83,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task PostGenerate_TwoColumnWithNestedBlocksInBothColumns_RendersAllContent()
+    public async Task PostGenerate_ColumnsWithNestedBlocksInBothColumns_RendersAllContent()
     {
         var doc = new
         {
@@ -90,13 +91,13 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             {
                 new
                 {
-                    type = "twoColumn",
-                    leftBlocks = new object[]
+                    type = "columns",
+                    column0 = new object[]
                     {
                         new { type = "text", htmlContent = "<p>LeftText</p>" },
                         new { type = "image", imageUrl = "https://img.url/left.jpg", altText = "left photo" }
                     },
-                    rightBlocks = new object[]
+                    column1 = new object[]
                     {
                         new { type = "button", label = "RightBtn", url = "https://right.com",
                               backgroundColor = "#000000", textColor = "#ffffff" }
@@ -116,6 +117,35 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
+    public async Task PostGenerate_ColumnsWithArrayFormat_RendersAllContent()
+    {
+        // Validates the natural JSON.stringify format from the frontend
+        var doc = new
+        {
+            blocks = new object[]
+            {
+                new
+                {
+                    type = "columns",
+                    columns = new object[][]
+                    {
+                        new object[] { new { type = "text", htmlContent = "<p>ColA</p>" } },
+                        new object[] { new { type = "text", htmlContent = "<p>ColB</p>" } },
+                        new object[] { new { type = "text", htmlContent = "<p>ColC</p>" } },
+                    }
+                }
+            }
+        };
+        var response = await _client.PostAsJsonAsync("/api/generate", doc);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("ColA", html);
+        Assert.Contains("ColB", html);
+        Assert.Contains("ColC", html);
+        Assert.Contains("33%", html);   // three-column width
+    }
+
+    [Fact]
     public async Task PostGenerate_WithMergeData_ResolvesTokensInOutput()
     {
         var doc = new
@@ -127,6 +157,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
                 new { type = "text", htmlContent = "<p>Welcome to {{company}}</p>" },
                 new { type = "button", label = "Hi {{person.name}}", url = "https://x.com" },
                 new { type = "image", imageUrl = "https://img.url/x.jpg", altText = "{{person.name}} photo" },
+                new { type = "header", text = "Dear {{person.name}}", level = 1, alignment = "left" },
             }
         };
         var response = await _client.PostAsJsonAsync("/api/generate", doc);
@@ -136,6 +167,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
         Assert.Contains("Welcome to Acme", html);
         Assert.Contains("Hi Alice", html);
         Assert.Contains("Alice photo", html);
+        Assert.Contains("Dear Alice", html);
         Assert.DoesNotContain("{{person.name}}", html);
         Assert.DoesNotContain("{{company}}", html);
     }
@@ -157,7 +189,7 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task PostGenerate_WithMergeData_TwoColumnNestedBlocksResolved()
+    public async Task PostGenerate_WithMergeData_ColumnsNestedBlocksResolved()
     {
         var doc = new
         {
@@ -166,9 +198,9 @@ public class GenerateEndpointTests : IClassFixture<WebApplicationFactory<Program
             {
                 new
                 {
-                    type = "twoColumn",
-                    leftBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.left}}</p>" } },
-                    rightBlocks = new object[] { new { type = "text", htmlContent = "<p>{{col.right}}</p>" } }
+                    type = "columns",
+                    column0 = new object[] { new { type = "text", htmlContent = "<p>{{col.left}}</p>" } },
+                    column1 = new object[] { new { type = "text", htmlContent = "<p>{{col.right}}</p>" } }
                 }
             }
         };

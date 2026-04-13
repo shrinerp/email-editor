@@ -49,7 +49,8 @@ public class HtmlGeneratorService
         ButtonBlock button     => RenderButton(button),
         ImageBlock image       => RenderImage(image),
         DividerBlock divider   => RenderDivider(divider),
-        TwoColumnBlock twoCol  => RenderTwoColumn(twoCol),
+        ColumnsBlock cols       => RenderColumns(cols),
+        HeaderBlock header     => RenderHeader(header),
         _                      => string.Empty
     };
 
@@ -128,30 +129,38 @@ public class HtmlGeneratorService
         return sb.ToString();
     }
 
-    private static string RenderTwoColumn(TwoColumnBlock block)
+    private static string RenderHeader(HeaderBlock block)
     {
+        var sb = new StringBuilder();
+        sb.AppendLine("<tr>");
+        sb.AppendLine($"<td style=\"padding:16px 32px;font-family:Arial,sans-serif;\">");
+        sb.AppendLine($"<h{block.Level} style=\"margin:0;color:#1a1a1a;text-align:{block.Alignment};\">{HtmlEncode(block.Text)}</h{block.Level}>");
+        sb.AppendLine("</td>");
+        sb.AppendLine("</tr>");
+        return sb.ToString();
+    }
+
+    private static string RenderColumns(ColumnsBlock block)
+    {
+        var n = block.Columns.Count;
+        var pct = (int)Math.Round(100.0 / n);
         var sb = new StringBuilder();
         sb.AppendLine("<tr>");
         sb.AppendLine("<td style=\"padding:16px 32px;\">");
         sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
         sb.AppendLine("<tr>");
-
-        // Left column
-        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-right:8px;\">");
-        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
-        foreach (var child in block.LeftBlocks)
-            sb.AppendLine(RenderBlock(child));
-        sb.AppendLine("</table>");
-        sb.AppendLine("</td>");
-
-        // Right column
-        sb.AppendLine("<td width=\"50%\" valign=\"top\" style=\"padding-left:8px;\">");
-        sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
-        foreach (var child in block.RightBlocks)
-            sb.AppendLine(RenderBlock(child));
-        sb.AppendLine("</table>");
-        sb.AppendLine("</td>");
-
+        for (int i = 0; i < n; i++)
+        {
+            var pad = i == 0     ? "padding-right:8px"
+                    : i == n - 1 ? "padding-left:8px"
+                    :               "padding-left:8px;padding-right:8px";
+            sb.AppendLine($"<td width=\"{pct}%\" valign=\"top\" style=\"{pad}\">");
+            sb.AppendLine("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">");
+            foreach (var child in block.Columns[i])
+                sb.AppendLine(RenderBlock(child));
+            sb.AppendLine("</table>");
+            sb.AppendLine("</td>");
+        }
         sb.AppendLine("</tr>");
         sb.AppendLine("</table>");
         sb.AppendLine("</td>");

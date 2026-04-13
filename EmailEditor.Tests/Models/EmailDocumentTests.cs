@@ -14,9 +14,11 @@ public class EmailDocumentTests
             new ButtonBlock("Click Me", "https://example.com"),
             new ImageBlock("https://example.com/img.jpg", "Alt text"),
             new DividerBlock(),
-            new TwoColumnBlock(
+            new ColumnsBlock(new List<IReadOnlyList<IEmailBlock>>
+            {
                 new List<IEmailBlock> { new TextBlock("<p>Left</p>") }.AsReadOnly(),
-                new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly()),
+                new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly(),
+            }.AsReadOnly()),
         };
 
         var doc = new EmailDocument(Blocks: blocks.AsReadOnly());
@@ -80,34 +82,42 @@ public class EmailDocumentTests
     }
 
     [Fact]
-    public void TwoColumnBlock_HasCorrectProperties()
+    public void ColumnsBlock_HasCorrectColumns()
     {
-        var left = new List<IEmailBlock> { new TextBlock("<p>Left</p>") }.AsReadOnly();
-        var right = new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly();
-        var block = new TwoColumnBlock(left, right);
-        Assert.Same(left, block.LeftBlocks);
-        Assert.Same(right, block.RightBlocks);
+        var col0 = new List<IEmailBlock> { new TextBlock("<p>Left</p>") }.AsReadOnly();
+        var col1 = new List<IEmailBlock> { new TextBlock("<p>Right</p>") }.AsReadOnly();
+        var cols = new List<IReadOnlyList<IEmailBlock>> { col0, col1 }.AsReadOnly();
+        var block = new ColumnsBlock(cols);
+        Assert.Equal(2, block.Columns.Count);
+        Assert.Same(col0, block.Columns[0]);
+        Assert.Same(col1, block.Columns[1]);
     }
 
     [Fact]
-    public void TwoColumnBlock_SupportsEmptyColumns()
+    public void ColumnsBlock_SupportsEmptyColumns()
     {
-        var block = new TwoColumnBlock(
+        var cols = new List<IReadOnlyList<IEmailBlock>>
+        {
             new List<IEmailBlock>().AsReadOnly(),
-            new List<IEmailBlock>().AsReadOnly());
-        Assert.Empty(block.LeftBlocks);
-        Assert.Empty(block.RightBlocks);
+            new List<IEmailBlock>().AsReadOnly(),
+        }.AsReadOnly();
+        var block = new ColumnsBlock(cols);
+        Assert.All(block.Columns, col => Assert.Empty(col));
     }
 
     [Fact]
     public void AllBlockTypes_ImplementIEmailBlock()
     {
-        var emptyList = new List<IEmailBlock>().AsReadOnly();
+        var emptyCols = new List<IReadOnlyList<IEmailBlock>>
+        {
+            new List<IEmailBlock>().AsReadOnly(),
+            new List<IEmailBlock>().AsReadOnly(),
+        }.AsReadOnly();
         Assert.IsAssignableFrom<IEmailBlock>(new HeroBlock("u", "h"));
         Assert.IsAssignableFrom<IEmailBlock>(new TextBlock("t"));
         Assert.IsAssignableFrom<IEmailBlock>(new ButtonBlock("l", "u"));
         Assert.IsAssignableFrom<IEmailBlock>(new ImageBlock("u", "a"));
         Assert.IsAssignableFrom<IEmailBlock>(new DividerBlock());
-        Assert.IsAssignableFrom<IEmailBlock>(new TwoColumnBlock(emptyList, emptyList));
+        Assert.IsAssignableFrom<IEmailBlock>(new ColumnsBlock(emptyCols));
     }
 }

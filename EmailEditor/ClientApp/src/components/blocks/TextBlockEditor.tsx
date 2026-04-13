@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import type { TextBlock } from '../../types/blocks';
@@ -24,6 +25,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
   const savedSelectionRef = useRef<{ index: number; length: number } | null>(null);
   const [autocomplete, setAutocomplete] = useState<AutocompleteState | null>(null);
   const autocompleteRef = useRef<AutocompleteState | null>(null);
+  const [mergeContainer, setMergeContainer] = useState<HTMLElement | null>(null);
 
   // Keep refs current every render
   useEffect(() => { onChangeRef.current = onChange; });
@@ -41,6 +43,15 @@ export function TextBlockEditor({ block, onChange }: Props) {
       modules: { toolbar: [['bold', 'italic', 'underline'], ['link'], [{ color: [] }]] },
     });
     quillRef.current = q;
+
+    // Append a ql-formats span to Quill's toolbar and portal MergeFieldSelect into it
+    const toolbarModule = q.getModule('toolbar') as { container?: HTMLElement };
+    if (toolbarModule?.container) {
+      const span = document.createElement('span');
+      span.className = 'ql-formats';
+      toolbarModule.container.appendChild(span);
+      setMergeContainer(span);
+    }
 
     if (block.htmlContent) {
       q.clipboard.dangerouslyPasteHTML(block.htmlContent);
@@ -111,7 +122,7 @@ export function TextBlockEditor({ block, onChange }: Props) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Text Block</label>
+      <p className="xui-heading-item" style={{ margin: '0 0 6px' }}>Text Block</p>
       <div ref={editorRef} style={{ minHeight: 100 }} />
 
       {/* {{ Autocomplete dropdown */}
@@ -157,7 +168,10 @@ export function TextBlockEditor({ block, onChange }: Props) {
         </div>
       )}
 
-      <MergeFieldSelect fieldPaths={fieldPaths} onInsert={handleInsert} />
+      {mergeContainer && createPortal(
+        <MergeFieldSelect fieldPaths={fieldPaths} onInsert={handleInsert} />,
+        mergeContainer,
+      )}
     </div>
   );
 }

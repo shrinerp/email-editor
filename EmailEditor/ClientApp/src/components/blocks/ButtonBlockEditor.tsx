@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import XUITextInput from '@xero/xui/react/textinput';
 import type { ButtonBlock } from '../../types/blocks';
 import { MergeFieldSelect, useMergeFields } from '../editor/MergeFieldChips';
 
@@ -16,19 +17,22 @@ export function ButtonBlockEditor({ block, onChange }: Props) {
   const labelCursor = useRef<number>(0);
   const fieldPaths = useMergeFields();
 
+  const labelInputProps = {
+    onSelect: (e: { target: EventTarget | null }) => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
+    onKeyUp: (e: { target: EventTarget | null }) => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; },
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <label style={{ fontWeight: 600 }}>Button / CTA</label>
+      <p className="xui-heading-item" style={{ margin: 0 }}>Button / CTA</p>
       <div>
-        <input
-          ref={labelRef}
-          type="text"
+        <XUITextInput
+          label="Button label"
           placeholder="Button label"
           value={block.label}
+          inputRef={labelRef}
           onChange={e => onChange({ ...block, label: e.target.value })}
-          onSelect={e => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
-          onKeyUp={e => { labelCursor.current = (e.target as HTMLInputElement).selectionStart ?? 0; }}
-          style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4, width: '100%', boxSizing: 'border-box' }}
+          inputProps={labelInputProps}
         />
         <MergeFieldSelect
           fieldPaths={fieldPaths}
@@ -37,18 +41,17 @@ export function ButtonBlockEditor({ block, onChange }: Props) {
             onChange({ ...block, label: insertAt(block.label, token, pos) });
             labelCursor.current = pos + token.length;
             requestAnimationFrame(() => {
-              labelRef.current?.focus();
-              labelRef.current?.setSelectionRange(pos + token.length, pos + token.length);
+              (labelRef.current as HTMLInputElement | null)?.focus();
+              (labelRef.current as HTMLInputElement | null)?.setSelectionRange(pos + token.length, pos + token.length);
             });
           }}
         />
       </div>
-      <input
-        type="text"
+      <XUITextInput
+        label="URL"
         placeholder="URL (https://...)"
         value={block.url}
         onChange={e => onChange({ ...block, url: e.target.value })}
-        style={{ padding: '6px 8px', border: '1px solid #ccc', borderRadius: 4 }}
       />
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <label style={{ fontSize: 13 }}>
